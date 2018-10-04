@@ -1,6 +1,4 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
+
 #include "palabra.h"
 
 /**
@@ -14,42 +12,42 @@ typedef struct _palabra{
 
 palabra* crear_palabra(){
 
-  palabra* palabra = NULL;
+  palabra* new_palabra = NULL;
 
-  if(!simbolos){
+  if(!new_palabra){
     return NULL;
   }
 
   /*Asignamos memoria para la palabra*/
-  palabra = (palabra *) malloc(sizeof(palabra));
+  new_palabra = (palabra*) malloc(sizeof(palabra));
 
-  if(!palabra){
+  if(!new_palabra){
     return NULL;
   }
 
   /*Asignamos memoria para el puntero de simbolos*/
-  palabra->simbolos = (char **) malloc(sizeof(char *));
+  new_palabra->simbolos = (char **) malloc(sizeof(char *));
 
-  if(!palabra->simbolos){
-    free(palabra);
+  if(!new_palabra->simbolos){
+    free(new_palabra);
     return NULL;
   }
 
   /*Asignamos el tamaño de la palabra*/
-  palabra->size = 0;
+  new_palabra->size = 0;
 
   /*Devolvemos la palabra*/
-  return palabra;
+  return new_palabra;
 }
 
 void eliminar_palabra(palabra* palabra){
-  int i = 0:
+  int i = 0;
   if(!palabra){
     return;
   }
 
   if(!palabra->simbolos){
-    free(palabra):
+    free(palabra);
     return;
   }
 
@@ -110,5 +108,5 @@ char* palabra_insertar_simbolo(palabra* palabra, char* simbolo){
 
   /*Si todo correcto devolvemos la palabra*/
   palabra->size++;
-  return palabra;
+  return palabra->simbolos[(palabra->size-1)];
 }

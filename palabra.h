@@ -1,7 +1,11 @@
 #ifndef PALABRA_H
 #define PALABRA_H
 
-typedef struct palabra;
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
+typedef struct _palabra palabra;
 
 palabra* crear_palabra();
 
