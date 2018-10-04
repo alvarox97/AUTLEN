@@ -104,9 +104,11 @@ char* palabra_insertar_simbolo(palabra* palabra, char* simbolo){
 
   /*Añadimos el simbolo a la palabra*/
   if(!strcpy(palabra->simbolos[palabra->size], simbolo)){
+    free(palabra->simbolos[palabra->size]);
     return NULL;
   }
 
   /*Si todo correcto devolvemos la palabra*/
+  palabra->size++;
   return palabra;
 }
