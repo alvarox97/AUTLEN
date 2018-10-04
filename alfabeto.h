@@ -1,9 +1,14 @@
 #ifndef ALFABETO_H
 #define ALFABETO_H
 
-typedef struct alfabeto;
+#include "palabra.h"
 
-alfabeto* crear_alfabeto();
+typedef struct _alfabeto{
+  palabra* palabra;
+} alfabeto;
+
+alfabeto* crear_alfabeto(){
+}
 
 void eliminar_alfabeto(alfabeto* alfabeto);
 

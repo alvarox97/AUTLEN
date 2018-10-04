@@ -1,10 +1,6 @@
 
 #include "palabra.h"
 
-/**
- * Implementacion de hash con una lista enlazada para controlar
- * colisiones
- */
 typedef struct _palabra{
   char** simbolos;
   int size;
@@ -13,10 +9,6 @@ typedef struct _palabra{
 palabra* crear_palabra(){
 
   palabra* new_palabra = NULL;
-
-  if(!new_palabra){
-    return NULL;
-  }
 
   /*Asignamos memoria para la palabra*/
   new_palabra = (palabra*) malloc(sizeof(palabra));
@@ -85,7 +77,7 @@ char* palabra_insertar_simbolo(palabra* palabra, char* simbolo){
   /*Comprobamos si existe suficiente memoria en el array*/
   if(palabra->size >= sizeof(*palabra->simbolos)/sizeof(char*)){
     /*Si no la hay hacemos realloc y añadimos memoria para un simbolo*/
-		palabra->simbolos = (char**) realloc(palabra->simbolos, sizeof(*palabra->simbolos) + sizeof(char*));
+		palabra->simbolos = (char**) realloc(palabra->simbolos, sizeof(char*)*(palabra->size + 1));
   }
 
   /*Comprobamos que el puntero no ha explosionado como una bomba H*/
