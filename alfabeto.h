@@ -3,9 +3,7 @@
 
 #include "palabra.h"
 
-typedef struct _alfabeto{
-  palabra* palabra;
-} alfabeto;
+typedef struct _alfabeto alfabeto;
 
 alfabeto* crear_alfabeto(){
 }
