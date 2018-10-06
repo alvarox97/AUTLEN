@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 typedef struct _palabra palabra;
 
@@ -16,5 +18,8 @@ int palabra_get_size(palabra* palabra);
 char** palabra_get_simbolos(palabra* palabra);
 
 char* palabra_insertar_simbolo(palabra* palabra, char* simbolo);
+
+void palabra_imprimir(FILE* fichero, palabra* palabra);
+
 
 #endif

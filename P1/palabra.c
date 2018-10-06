@@ -102,3 +102,22 @@ char* palabra_insertar_simbolo(palabra* palabra, char* simbolo){
   palabra->size++;
   return palabra->simbolos[(palabra->size-1)];
 }
+
+void palabra_imprimir(FILE* fichero, palabra* palabra){
+  int i;
+  char** simbolos;
+
+  if(!fichero || !palabra || !palabra->simbolos)
+    return;
+
+  simbolos = palabra_get_simbolos(palabra);
+
+  fprintf(fichero, "[(%d) ", palabra_get_size(palabra));
+
+  for(i=0 ; i < palabra_get_size(palabra) ; i++){
+    fprintf(fichero, "%s ", simbolos[i]);
+  }
+  fprintf(fichero, "]\n");
+
+  return;
+}

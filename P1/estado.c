@@ -25,8 +25,10 @@ estado* crear_estado(char* nombre, int tipo){
   /*Reservamos memoria para el nombre del estado y copiamos el nombre correspondiente*/
 
   est->nombre = (char*)malloc((strlen(nombre)+1)*(sizeof(char)));
-  if(!est->nombre)
+  if(!est->nombre){
+    free(est);
     return NULL;
+  }
   strcpy(est->nombre, nombre);
 
   return est;
