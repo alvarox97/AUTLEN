@@ -49,16 +49,16 @@ void estado_imprimir(FILE* fichero, estado* est){
     return;
 
   switch(est->tipo){
-    case EST_INICIAL:
+    case INICIAL:
       fprintf(fichero, "->%s ", est->nombre);
       break;
-    case EST_FINAL:
+    case FINAL:
       fprintf(fichero, "%s* ", est->nombre);
       break;
-    case EST_NORMAL:
+    case NORMAL:
       fprintf(fichero, "%s ", est->nombre);
       break;
-    case EST_INICIAL_Y_FINAL:
+    case INICIAL_Y_FINAL:
       fprintf(fichero, "%s* ", est->nombre);
       break;
   }

@@ -8,7 +8,6 @@
 int main(int argc, char ** argv)
 {
     alfabeto * binario;
-    int i;
 
 
     binario = crear_alfabeto("0_1",2);

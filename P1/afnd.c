@@ -1,5 +1,12 @@
 #include "afnd.h"
 
+typedef struct _transicion{
+    char* est_inicial;
+    char* simbolo_entrante;
+    int num_est;
+    estado** est_final;
+}transicion;
+
 typedef struct _AFND {
     char* nombre;
     alfabeto* alfabeto;
@@ -13,16 +20,10 @@ typedef struct _AFND {
     transicion** transiciones;
 }AFND;
 
-typedef struct _transicion{
-    char* est_inicial;
-    char* simbolo_entrante;
-    int num_est;
-    estado** est_final;
-}transicion;
 
-transicion* crear_transicion(*AFND afnd, char* est_inicial, char* simbolo_entrante, char* est_final){
+
+transicion* crear_transicion(AFND* afnd, char* est_inicial, char* simbolo_entrante, char* est_final){
   transicion* trans = NULL;
-  estado* est_aux = NULL;
   int i;
   /*Comprobamos que los argumentos recibidos no están vacíos*/
   if(!afnd || !est_inicial || !simbolo_entrante || !est_final)
@@ -45,7 +46,7 @@ transicion* crear_transicion(*AFND afnd, char* est_inicial, char* simbolo_entran
   /*Reservamos memoria y copiamos el símbolo introducido*/
 
   trans->simbolo_entrante = (char *)malloc((strlen(simbolo_entrante)+1)*sizeof(char));
-  if(!trans->simbolo_entrante == NULL){
+  if(!trans->simbolo_entrante){
     free(trans->est_inicial);
     free(trans);
     return NULL;
@@ -76,7 +77,7 @@ transicion* crear_transicion(*AFND afnd, char* est_inicial, char* simbolo_entran
 
   /*Guardamos la transición el el array de transiciones, comprobando si necesitamos reservar más memoria*/
 
-  afnd->transiciones = (transicion**)realloc((afnd->num_transiciones + 1)* sizeof(transicion*));
+  afnd->transiciones = (transicion**)realloc(afnd->transiciones, (afnd->num_transiciones + 1)* sizeof(transicion*));
 
   /*Comprobamos si ha habido algún error*/
   if(!afnd->transiciones){
@@ -86,7 +87,7 @@ transicion* crear_transicion(*AFND afnd, char* est_inicial, char* simbolo_entran
     return NULL;
   }
   /*Guardamos la nueva transición en la lista de transciones*/
-  afnd->transciciones[afnd->num_transiciones] = trans;
+  afnd->transiciones[afnd->num_transiciones] = trans;
   afnd->num_transiciones++;
 
   return trans;
@@ -96,7 +97,7 @@ void eliminar_transicion(transicion* trans){
   if(!trans)
     return;
   /*Liberamos todos los recursos (sin liberar cada estado final, ya que apuntan a los estados del afnd)*/
-  free(trans->est_incial);
+  free(trans->est_inicial);
   free(trans->simbolo_entrante);
   free(trans->est_final);
   free(trans);
@@ -112,9 +113,9 @@ void transicion_imprimir(FILE* fd, transicion* trans){
 
   /*Imprimimos todos los estados finales*/
   for(i=0 ; i < trans->num_est ; i++){
-    fprintf(fd, "%s ", estado_nombre(trans->est_final));
+    estado_imprimir(fd, trans->est_final[i]);
   }
-  fprintf("}\n");
+  fprintf(fd, "}\n");
 }
 
 AFND* AFNDNuevo(char* nombre, int num_estados, int num_simbolos){
@@ -131,12 +132,12 @@ AFND* AFNDNuevo(char* nombre, int num_estados, int num_simbolos){
     return NULL;
 
   /*Reservamos memoria para su nombre y lo copiamos*/
-  afnd->nombre = (char*)malloc(stlen(nombre)*sizeof(char));
+  afnd->nombre = (char*)malloc((strlen(nombre)+1)*sizeof(char));
   if(!afnd->nombre){
     free(afnd);
     return NULL;
   }
-  stdcpy(afnd->nombre, nombre);
+  strcpy(afnd->nombre, nombre);
 
   /*Creamos su alfabeto*/
   afnd->alfabeto = crear_alfabeto("A", num_simbolos);
@@ -189,7 +190,7 @@ AFND* AFNDNuevo(char* nombre, int num_estados, int num_simbolos){
   afnd->num_transiciones = 0;
   afnd->transiciones = (transicion **) malloc(sizeof(transicion*));
   if(!afnd->transiciones){
-    free(estados_actuales);
+    free(afnd->estados_actuales);
     eliminar_palabra(afnd->cadena_actual);
     free(afnd->estados);
     eliminar_alfabeto(afnd->alfabeto);
@@ -213,12 +214,12 @@ void AFNDElimina(AFND* p_afnd){
   for (i=0 ; i < p_afnd->num_estados ; i++){
     eliminar_estado(p_afnd->estados[i]);
   }
-  free(estados);
+  free(p_afnd->estados);
   eliminar_palabra(p_afnd->cadena_actual);
 
   /*Los estados actuales son referencias a la lista de estados, por tanto no los eliminamos*/
 
-  free(estados_actuales);
+  free(p_afnd->estados_actuales);
 
   for(i=0 ; i < p_afnd->num_transiciones ; i++){
     eliminar_transicion(p_afnd->transiciones[i]);
@@ -237,20 +238,21 @@ void AFNDImprime(FILE * fd, AFND* p_afnd){
   fprintf(fd, "%s={\n", p_afnd->nombre);
   /*... el número de simbolos y el alfabeto...*/
   fprintf(fd, "\tnum_simbolos = %d\n\n\t", p_afnd->num_simbolos);
-  alfabeto_ìmprimir(fd, p_afnd->alfabeto);
+  alfabeto_imprimir(fd, p_afnd->alfabeto);
 
   /*... el número de estados y la lista de estados...*/
-  fprinf(fd, "\n\tnum_estados = %d\n", p_afnd->num_estados);
+  fprintf(fd, "\n\tnum_estados = %d\n", p_afnd->num_estados);
   fprintf(fd, "\n\tQ={");
   for(i=0; i < p_afnd->num_estados ; i++){
-    estado_ìmprimir(fd, p_afnd->estados[i]);
+    estado_imprimir(fd, p_afnd->estados[i]);
   }
   fprintf(fd, "}\n");
 
   /*... y la función de transición*/
   fprintf(fd, "\n\tFunción de Transición = {\n\n");
   for(i=0 ; i < p_afnd->num_transiciones ; i++){
-    fprintf(fd, "\t\t%s",transicion_imprimir(fd, p_afnd->transiciones));
+    fprintf(fd, "\t\t");
+    transicion_imprimir(fd, p_afnd->transiciones[i]);
   }
   fprintf(fd, "\t}\n}");
 }
@@ -360,7 +362,7 @@ AFND * AFNDInsertaTransicion(AFND * p_afnd, char * nombre_estado_i, char * nombr
     /*Si ya existe la transicion la modifico si es necesario*/
 
     for(i=0; i<trn->num_est; i++){
-      if(estado_es(trn->est_final, nombre_estado_f)){
+      if(estado_es(trn->est_final[i], nombre_estado_f)){
         /*Si ya está hemos acabado*/
         flag_trn = 1;
         break;
@@ -396,7 +398,6 @@ AFND * AFNDInsertaLetra(AFND * p_afnd, char * letra){
   return p_afnd;
 }
 void AFNDImprimeConjuntoEstadosActual(FILE * fd, AFND * p_afnd){
-  char estados[1024] = "";
   estado* est = NULL;
   int i=0;
 
@@ -408,26 +409,16 @@ void AFNDImprimeConjuntoEstadosActual(FILE * fd, AFND * p_afnd){
     return;
   }
 
-  estados = "{->";
-  est = p_afnd->estados_actuales[0];
+  fprintf(fd, "ACTUALMENTE EN ");
+  fprintf(fd, "{");
 
-  if(est != NULL){
-    while(est){
-      sprintf(estados, "%s%s", estados, estado_nombre(est));
-      if(estado_tipo(est) == 1 || estado_tipo(est) == 2){
-        sprintf(estados, "%s* ", estados);
-      }else{
-        sprintf(estados, "%s ", estados);
-      }
-      i++;
-      est = p_afnd->estados_actuales[i];
-    }
-
+  for(i=0; i<p_afnd->num_estados_actuales; i++){
+    est = p_afnd->estados_actuales[i];
+    estado_imprimir(fd, est);
+    i++;
   }
 
-  sprintf(estados, "%s}", estados);
-
-  fprintf(fd, "ACTUALMENTE EN %s\n", estados);
+  fprintf(fd, "}\n");
 }
 void AFNDImprimeCadenaActual(FILE *fd, AFND * p_afnd){
   if(!fd || !p_afnd){
@@ -445,8 +436,8 @@ AFND * AFNDInicializaEstado (AFND * p_afnd){
     return NULL;
   }
 
-  for(i=0; i<p_afnd->num_estados, i++){
-    est = p_afnd->num_estados[i];
+  for(i=0; i<p_afnd->num_estados; i++){
+    est = p_afnd->estados[i];
     if(!est){
       return NULL;
     }
@@ -461,11 +452,9 @@ AFND * AFNDInicializaEstado (AFND * p_afnd){
       p_afnd->estados_actuales[p_afnd->num_estados_actuales] = est;
       p_afnd->num_estados_actuales++;
     }
-
-    return p_afnd;
   }
 
-
+  return p_afnd;
 }
 void AFNDProcesaEntrada(FILE * fd, AFND * p_afnd){
   int i = 0;
@@ -490,13 +479,13 @@ void AFNDTransita(AFND * p_afnd){
   int j=0;
   estado* est = NULL;
   transicion* trn = NULL;
-  char* simbolo = NULL;
+  char** simbolos = NULL;
   estado ** new_actual = NULL;
   int index = 0;
   palabra* new_word = NULL;
 
   if(!p_afnd){
-    return NULL;
+    return;
   }
 
   /*Compruebo que está definido un estado actual*/
@@ -508,7 +497,7 @@ void AFNDTransita(AFND * p_afnd){
   }
   /*Obtengo el simbolo*/
   simbolos = palabra_get_simbolos(p_afnd->cadena_actual);
-  if(!simbolo)
+  if(!simbolos)
     return;
 
   /*Reservo memoria para los nuevos estados */
@@ -518,7 +507,7 @@ void AFNDTransita(AFND * p_afnd){
 
 
   /*Itero sobre los est actuales con el simbolo actual para obtener las trans*/
-  for(i=0; i<p_afnd->num_estados; i++){
+  for(i=0; i<p_afnd->num_estados_actuales; i++){
     est = p_afnd->estados_actuales[i];
     /*Busco la transicion*/
     for(j=0; j<p_afnd->num_transiciones; j++){
@@ -532,15 +521,16 @@ void AFNDTransita(AFND * p_afnd){
     if(!trn){
       return;
     }
+    /*transicion_imprimir(stdout, trn);*/
     /*Obtengo los nuevos estados*/
     for(j=0; j<trn->num_est; j++){
-      if(sizeof(*new_actual)/sizeof(estado*) >= index){
-        new_actual = realloc(new_actual, sizeof(estado*)*(index+(trn->num_est-j)));
+      if(index >= (sizeof(*new_actual)/sizeof(estado*))){
+        new_actual = (estado**) realloc(new_actual, sizeof(estado*)*(index+1));
         if(!new_actual){
           return;
         }
       }
-      new_actual[index] = trn->est-final[j];
+      new_actual[index] = trn->est_final[j];
       index++;
 
     }
@@ -550,18 +540,22 @@ void AFNDTransita(AFND * p_afnd){
   free(p_afnd->estados_actuales);
   /*NOTA: solo se libera el puntero pues los estados son referencias no copias*/
   p_afnd->estados_actuales = new_actual;
-  p-afnd->num_estados_actuales = index;
+  for(i=0; i<index; i++){
+    estado_imprimir(stdout, new_actual[i]);
+  }
+  printf("IND%i\n", index);
+  p_afnd->num_estados_actuales = index;
 
   /*Avanzo un simbolo*/
   new_word = crear_palabra();
   if(!new_word)
     return;
 
-  for(i=1; i<strlen(simbolos); i++){
+  for(i=1; i<palabra_get_size(p_afnd->cadena_actual); i++){
     palabra_insertar_simbolo(new_word, simbolos[i]);
   }
 
-  eliminar_palabra(p_anfd->cadena_actual);
+  eliminar_palabra(p_afnd->cadena_actual);
   p_afnd->cadena_actual = new_word;
 
 }

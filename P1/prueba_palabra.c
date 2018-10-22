@@ -10,7 +10,6 @@ int main (int argc, char **argv)
         palabra * pal;
         int i;
         char letra [20];
-        char * letrai;
 
         pal = crear_palabra();
 

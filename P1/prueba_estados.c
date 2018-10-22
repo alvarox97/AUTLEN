@@ -33,16 +33,16 @@ int main (int argc, char ** argv)
         {
             case 0:
                 estados[i] =
-                               crear_estado(nombre_estado,EST_INICIAL_Y_FINAL);
+                               crear_estado(nombre_estado,INICIAL_Y_FINAL);
                 break;
             case 1:
-                estados[i] = crear_estado(nombre_estado,EST_INICIAL);
+                estados[i] = crear_estado(nombre_estado,INICIAL);
                 break;
             case 2:
-                estados[i] = crear_estado(nombre_estado,EST_FINAL);
+                estados[i] = crear_estado(nombre_estado,FINAL);
                 break;
             case 3:
-                estados[i] = crear_estado(nombre_estado,EST_NORMAL);
+                estados[i] = crear_estado(nombre_estado,NORMAL);
                 break;
 
 

@@ -6,10 +6,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define EST_INICIAL 0
-#define EST_FINAL   1
-#define EST_INICIAL_Y_FINAL 2
-#define EST_NORMAL 3
+#define INICIAL 0
+#define FINAL   1
+#define INICIAL_Y_FINAL 2
+#define NORMAL 3
 
 typedef struct _estado estado;
 estado* crear_estado(char* nombre, int tipo);
