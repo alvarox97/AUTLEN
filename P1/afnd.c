@@ -119,6 +119,7 @@ void transicion_imprimir(FILE* fd, transicion* trans){
 
 AFND* AFNDNuevo(char* nombre, int num_estados, int num_simbolos){
   AFND* afnd = NULL;
+  int i = 0;
 
   /*Comprobamos que los argumentos sean válidos*/
   if(!nombre || num_estados < 0 || num_simbolos < 0 )
@@ -150,6 +151,10 @@ AFND* AFNDNuevo(char* nombre, int num_estados, int num_simbolos){
 
   /*Reservamos memoria para la lista de estados*/
   afnd->estados = (estado**)malloc(num_estados*sizeof(estado*));
+  /*Inicializamos a NULL*/
+  for(i=0; i<num_estados; i++){
+    afnd->estados[i] = NULL;
+  }
   if(!afnd->estados){
     eliminar_alfabeto(afnd->alfabeto);
     free(afnd->nombre);
@@ -261,7 +266,34 @@ AFND * AFNDInsertaSimbolo(AFND * p_afnd, char * simbolo){
 }
 
 AFND * AFNDInsertaEstado(AFND * p_afnd, char * nombre, int tipo){
-  /*Esta funcion tambien es miaaa, la hago en otro momentoo que ahora me da pere. Fdo: Luis*/
+  estado* est = NULL;
+  int i = 0;
+
+  if(!p_afnd || !nombre || tipo < 0 || tipo > 3){
+    return NULL;
+  }
+
+  if(sizeof(*p_afnd->estados)/sizeof(estado *) >= p_afnd->num_estados){
+    /*Estoy asumiendo que el numero de estados pasado al crear es inmutable*/
+    return NULL;
+  }
+
+  /*Creo el estado apropiado*/
+  est = crear_estado(nombre, tipo);
+  if(!est){
+    return NULL;
+  }
+
+  /*Inserto en la primera posicion libre*/
+  for(i=0; i<p_afnd->num_estados; i++){
+    if(!p_afnd->estados[i]){
+      p_afnd->estados[i] = est;
+      break;
+    }
+
+  }
+
+return p_afnd;
 }
 
 AFND * AFNDInsertaTransicion(AFND * p_afnd, char * nombre_estado_i, char * nombre_simbolo_entrada,char * nombre_estado_f ){
