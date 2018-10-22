@@ -113,7 +113,7 @@ void transicion_imprimir(FILE* fd, transicion* trans){
 
   /*Imprimimos todos los estados finales*/
   for(i=0 ; i < trans->num_est ; i++){
-    estado_imprimir(fd, trans->est_final[i]);
+    fprintf(fd, "%s ", estado_nombre(trans->est_final[i]));
   }
   fprintf(fd, "}\n");
 }
@@ -415,7 +415,6 @@ void AFNDImprimeConjuntoEstadosActual(FILE * fd, AFND * p_afnd){
   for(i=0; i<p_afnd->num_estados_actuales; i++){
     est = p_afnd->estados_actuales[i];
     estado_imprimir(fd, est);
-    i++;
   }
 
   fprintf(fd, "}\n");
@@ -435,6 +434,8 @@ AFND * AFNDInicializaEstado (AFND * p_afnd){
   if(!p_afnd){
     return NULL;
   }
+
+  p_afnd->num_estados_actuales = 0;
 
   for(i=0; i<p_afnd->num_estados; i++){
     est = p_afnd->estados[i];
