@@ -478,6 +478,7 @@ void AFNDProcesaEntrada(FILE * fd, AFND * p_afnd){
 void AFNDTransita(AFND * p_afnd){
   int i=0;
   int j=0;
+  int z=0;
   estado* est = NULL;
   transicion* trn = NULL;
   char** simbolos = NULL;
@@ -531,9 +532,18 @@ void AFNDTransita(AFND * p_afnd){
           return;
         }
       }
-      new_actual[index] = trn->est_final[j];
-      index++;
-
+      /*Miramos si el nodo final ya está en la lista*/
+      for(z=0 ; z < index ; z++){
+        if(strcmp(estado_nombre(trn->est_final[j]),estado_nombre(new_actual[z])) == 0){
+          break;
+        }
+      }
+      /*Si no está ya, lo añadimos*/
+      if(z == index){
+        new_actual[index] = trn->est_final[j];
+        index++;
+      }
+      
     }
   }
 
@@ -541,10 +551,6 @@ void AFNDTransita(AFND * p_afnd){
   free(p_afnd->estados_actuales);
   /*NOTA: solo se libera el puntero pues los estados son referencias no copias*/
   p_afnd->estados_actuales = new_actual;
-  for(i=0; i<index; i++){
-    estado_imprimir(stdout, new_actual[i]);
-  }
-  printf("IND%i\n", index);
   p_afnd->num_estados_actuales = index;
 
   /*Avanzo un simbolo*/

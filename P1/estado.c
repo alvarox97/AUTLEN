@@ -48,6 +48,8 @@ void estado_imprimir(FILE* fichero, estado* est){
   if (!fichero || !est)
     return;
 
+  /*Miramos el tipo e imprimimos en consecuencia*/
+
   switch(est->tipo){
     case INICIAL:
       fprintf(fichero, "->%s ", est->nombre);
