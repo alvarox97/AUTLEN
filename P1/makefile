@@ -4,12 +4,18 @@ CCFLAGS = -pedantic -Wall -g
 
 # Makefile for testing libs with testlibs
 
-all: prueba_estados prueba_alfabeto prueba_palabra prueba_afnd
+all: prueba_estados prueba_alfabeto prueba_palabra prueba_afnd test
 
 prueba_afnd: prueba_afnd.o $(obj_libs)
 	$(CC) $(CCFLAGS) $^ -o $@
 
 prueba_afnd.o: prueba_afnd.c
+	$(CC) $(CCFLAGS) -c $< -o $@
+
+test: test.o $(obj_libs)
+	$(CC) $(CCFLAGS) $^ -o $@
+
+test.o: test.c
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 prueba_estados: prueba_estados.o estado.o

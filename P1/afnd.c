@@ -389,8 +389,24 @@ AFND * AFNDInsertaTransicion(AFND * p_afnd, char * nombre_estado_i, char * nombr
 }
 
 AFND * AFNDInsertaLetra(AFND * p_afnd, char * letra){
+  int i=0;
+  int flag=0;
+  char** simbolos = NULL;
   if(!p_afnd || !letra)
     return NULL;
+  /*Comprobamos que la letra esté en el alfabeto*/
+  simbolos = alfabeto_get_simbolos(p_afnd->alfabeto);
+  for(i=0; i<alfabeto_get_size(p_afnd->alfabeto); i++){
+    if(strcmp(simbolos[i], letra) == 0){
+      flag = 1;
+      break;
+    }
+  }
+  if(flag == 0){
+    /*Retornamos el autómata pero sin insertar la letra errónea*/
+    fprintf(stderr, "La letra introducida no está en el alfabeto\n");
+    return p_afnd;
+  }
   /*Insertamos el símbolo en la palabra, comprobando que no es NULL la salida*/
   if(!palabra_insertar_simbolo(p_afnd->cadena_actual, letra))
     return NULL;
@@ -519,8 +535,9 @@ void AFNDTransita(AFND * p_afnd){
         break;
       }
     }
-    /*Si no encuentra es que ha petado*/
+    /*Si no encuentra es que hay error*/
     if(!trn){
+      free(new_actual);
       return;
     }
     /*transicion_imprimir(stdout, trn);*/
@@ -543,7 +560,7 @@ void AFNDTransita(AFND * p_afnd){
         new_actual[index] = trn->est_final[j];
         index++;
       }
-      
+
     }
   }
 
