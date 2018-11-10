@@ -276,8 +276,8 @@ AFND* AFNDNuevo(char* nombre, int num_estados, int num_simbolos){
 
   /*Reservamos transiciones */
   afnd->num_transiciones_lambda = 0;
-  afnd->transiciones->lambda = (transicion **) malloc(sizeof(transicion*));
-  if(!afnd->transiciones->lambda){
+  afnd->transiciones_lambda = (transicion **) malloc(sizeof(transicion*));
+  if(!afnd->transiciones_lambda){
     free(afnd->estados_actuales);
     eliminar_palabra(afnd->cadena_actual);
     free(afnd->estados);
@@ -312,6 +312,10 @@ void AFNDElimina(AFND* p_afnd){
   for(i=0 ; i < p_afnd->num_transiciones ; i++){
     eliminar_transicion(p_afnd->transiciones[i]);
   }
+
+  for(i=0 ; i < p_afnd->num_transiciones_lambda ; i++){
+    eliminar_transicion(p_afnd->transiciones_lambda[i]);
+  }
   free(p_afnd->transiciones);
   free(p_afnd);
 }
@@ -342,6 +346,13 @@ void AFNDImprime(FILE * fd, AFND* p_afnd){
     fprintf(fd, "\t\t");
     transicion_imprimir(fd, p_afnd->transiciones[i]);
   }
+
+  /*TODO imprimo las lambdas asi para debuguear HACER LA MATRIZ*/
+  for(i=0 ; i < p_afnd->num_transiciones_lambda ; i++){
+    fprintf(fd, "\t\t");
+    transicion_imprimir(fd, p_afnd->transiciones_lambda[i]);
+  }
+
   fprintf(fd, "\t}\n}");
 }
 
@@ -385,116 +396,6 @@ AFND * AFNDInsertaEstado(AFND * p_afnd, char * nombre, int tipo){
 
 return p_afnd;
 }
-
-AFND * AFNDInsertaLTransicion(
-      AFND * p_afnd,
-      char * nombre_estado_i,
-       char * nombre_estado_f ){
-
-         int i=0,  flag_i=0, flag_f=0, flag_trn=0, index_f=0;
-         char** simbolos = NULL;
-         transicion* trn = NULL;
-
-         if(!p_afnd || !nombre_estado_i || !nombre_estado_f){
-           return NULL;
-         }
-
-         for(i=0; i<p_afnd->num_estados; i++){
-             /*Comprobamos si tenemos el estado en el automata*/
-           if(estado_es(p_afnd->estados[i], nombre_estado_i)){
-             flag_i = 1;
-           }
-             /*Comprobamos que está el estado final */
-           if(estado_es(p_afnd->estados[i], nombre_estado_f)){
-             flag_f = 1;
-             index_f = i;
-           }
-
-         }
-
-         /*Si no esta alguno salimos */
-         if(flag_i*flag_f != 1){
-           return NULL;
-         }
-
-         /*Buscamos las transiciones del estado inicial*/
-         for(i=0; i<p_afnd->num_transiciones_lambda; i++){
-           if(strcmp(p_afnd->transiciones_lambda[i]->est_inicial, nombre_estado_i) == 0){
-             trn = p_afnd->transiciones_lambda[i];
-             break;
-           }
-         }
-
-         if(!trn){
-           /*Creamos una nueva transicion*/
-           trn = crear_transicion_lambda(p_afnd, nombre_estado_i, "lambda", nombre_estado_f);
-           if(!trn){
-             return NULL;
-           }
-         }else{
-           /*Si ya existe la transicion la modifico si es necesario*/
-
-           for(i=0; i<trn->num_est; i++){
-             if(estado_es(trn->est_final[i], nombre_estado_f)){
-               /*Si ya está hemos acabado*/
-               flag_trn = 1;
-               break;
-             }
-           }
-
-           /*Si no lo he encontrado en los estados finales de la transicion*/
-           if(flag_trn == 0){
-             /*Hago espacio para el estado*/
-             trn->est_final = (estado**) realloc(trn->est_final, sizeof(estado *)*(trn->num_est + 1));
-             if(!trn->est_final){
-               return NULL;
-             }
-             /*Añado el estado*/
-             trn->est_final[trn->num_est] = p_afnd->estados[index_f];
-             trn->num_est += 1;
-           }
-
-         }
-
-/*Si llega hasta aquí es que sorprendentemente todo está correcto*/
-
-return p_afnd;
-}
-
-AFND * AFNDCierraLTransicion (AFND * p_afnd){
-  int i=0, j=0, k=0, flag=0;
-  estado* est_i_aux = NULL, est_f_aux = NULL;
-  transicion* trn = NULL;
-
-  if(!p_afnd){
-    return NULL;
-  }
-
-  /*Busco hacer el cierre refexivo si no existe ya*/
-  for(i=0; i<p_afnd->num_estados; i++){
-    flag = 0;
-    for(j=0; j<p_afnd->num_transiciones_lambda; j++){
-      if(estado_es(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(p_afnd->estados[i])) &&
-      estado_es(p_afnd->transiciones_lambda[j]->est_final, estado_nombre(p_afnd->estados[i]))){
-      flag = 1;
-      break;
-      }
-
-    }
-    /*Si no encuentra una transicion reflexiva la inserta*/
-    if(flag == 0){
-      trn = crear_transicion_lambda(p_afnd, estado_nombre(p_afnd->estados[i]), "lambda", estado_nombre(p_afnd->estados[i]));
-      if(!trn){
-        return NULL;
-      }
-    }
-  }
-
-  /*Busco hacer el cierre transitivo*/
-  /*Busco sobre estados iniciales*/
-}
-
-AFND * AFNDInicializaCadenaActual (AFND * p_afnd );
 
 AFND * AFNDInsertaTransicion(AFND * p_afnd, char * nombre_estado_i, char * nombre_simbolo_entrada,char * nombre_estado_f ){
 
@@ -612,6 +513,7 @@ AFND * AFNDInsertaLetra(AFND * p_afnd, char * letra){
 
   return p_afnd;
 }
+
 void AFNDImprimeConjuntoEstadosActual(FILE * fd, AFND * p_afnd){
   estado* est = NULL;
   int i=0;
@@ -634,6 +536,7 @@ void AFNDImprimeConjuntoEstadosActual(FILE * fd, AFND * p_afnd){
 
   fprintf(fd, "}\n");
 }
+
 void AFNDImprimeCadenaActual(FILE *fd, AFND * p_afnd){
   if(!fd || !p_afnd){
     return;
@@ -642,54 +545,7 @@ void AFNDImprimeCadenaActual(FILE *fd, AFND * p_afnd){
   palabra_imprimir(fd, p_afnd->cadena_actual);
 
 }
-AFND * AFNDInicializaEstado (AFND * p_afnd){
-  int i=0;
-  estado* est = NULL;
 
-  if(!p_afnd){
-    return NULL;
-  }
-
-  p_afnd->num_estados_actuales = 0;
-
-  for(i=0; i<p_afnd->num_estados; i++){
-    est = p_afnd->estados[i];
-    if(!est){
-      return NULL;
-    }
-    /*Comprobamos si es inicial*/
-    if(estado_tipo(est) == 0 || estado_tipo(est) == 2){
-      if(sizeof(*p_afnd->estados_actuales)/sizeof(estado *) >= p_afnd->num_estados_actuales){
-        p_afnd->estados_actuales = (estado **)realloc(p_afnd->estados_actuales, sizeof(estado*)*(p_afnd->num_estados_actuales + 1));
-        if(!p_afnd){
-          return NULL;
-        }
-      }
-      p_afnd->estados_actuales[p_afnd->num_estados_actuales] = est;
-      p_afnd->num_estados_actuales++;
-    }
-  }
-
-  return p_afnd;
-}
-void AFNDProcesaEntrada(FILE * fd, AFND * p_afnd){
-  int i = 0;
-
-  if(!fd || !p_afnd){
-    return;
-  }
-
-  i = palabra_get_size(p_afnd->cadena_actual);
-
-  while(i>0){
-    AFNDImprimeConjuntoEstadosActual(fd, p_afnd);
-    AFNDImprimeCadenaActual(fd, p_afnd);
-    AFNDTransita(p_afnd);
-    i--;
-  }
-  AFNDImprimeConjuntoEstadosActual(fd, p_afnd);
-  AFNDImprimeCadenaActual(fd, p_afnd);
-}
 void AFNDTransita(AFND * p_afnd){
   int i=0;
   int j=0;
@@ -709,7 +565,7 @@ void AFNDTransita(AFND * p_afnd){
   if(!p_afnd->estados_actuales){
     return;
   }
-  if(!p_afnd->estados_actuales[0]){
+  if(p_afnd->num_estados_actuales==0){
     return;
   }
   /*Obtengo el simbolo*/
@@ -734,12 +590,10 @@ void AFNDTransita(AFND * p_afnd){
         break;
       }
     }
-    /*Si no encuentra es que hay error*/
+    /*Si no encuentra transición, no actualizamos nuevos estados, pero seguimos iterando los estados actuales*/
     if(!trn){
-      free(new_actual);
-      return;
+      continue;
     }
-    /*transicion_imprimir(stdout, trn);*/
     /*Obtengo los nuevos estados*/
     for(j=0; j<trn->num_est; j++){
       if(index >= (sizeof(*new_actual)/sizeof(estado*))){
@@ -783,10 +637,288 @@ void AFNDTransita(AFND * p_afnd){
 
 }
 
-void AFNDTransitaLambda(AFND * p_afnd, estado ** lista_estados){
-  if(!p_afnd || !lista_estados){
+void AFNDTransitaLambda(AFND * p_afnd){
+  int i=0;
+  int j=0;
+  int z=0;
+  estado* est = NULL;
+  transicion* trn = NULL;
+  estado ** new_actual = NULL;
+  int index = 0;
+
+  if(!p_afnd){
+    return;
+  }
+
+  /*Compruebo que está definido un estado actual*/
+  if(!p_afnd->estados_actuales){
+    return;
+  }
+  if(p_afnd->num_estados_actuales==0){
+    return;
+  }
+
+  /*Reservo memoria para los nuevos estados */
+  new_actual = (estado **) malloc(sizeof(estado*));
+  if(!new_actual)
+    return;
+
+
+  /*Itero sobre los est actuales para obtener las trans lambda*/
+  for(i=0; i<p_afnd->num_estados_actuales; i++){
+    est = p_afnd->estados_actuales[i];
+    /*Busco la transicion*/
+    for(j=0; j<p_afnd->num_transiciones_lambda; j++){
+      if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(est)) == 0){
+        trn = p_afnd->transiciones_lambda[j];
+        break;
+      }
+    }
+    /*Si no encuentra es que hay error*/
+    if(!trn){
+      free(new_actual);
+      return;
+    }
+    /*Obtengo los nuevos estados*/
+    for(j=0; j<trn->num_est; j++){
+      if(index >= (sizeof(*new_actual)/sizeof(estado*))){
+        new_actual = (estado**) realloc(new_actual, sizeof(estado*)*(index+1));
+        if(!new_actual){
+          return;
+        }
+      }
+      /*Miramos si el nodo final ya está en la lista*/
+      for(z=0 ; z < index ; z++){
+        if(strcmp(estado_nombre(trn->est_final[j]),estado_nombre(new_actual[z])) == 0){
+          break;
+        }
+      }
+      /*Si no está ya, lo añadimos*/
+      if(z == index){
+        new_actual[index] = trn->est_final[j];
+        index++;
+      }
+
+    }
+  }
+
+  /*Transito a los nuevos estados*/
+  free(p_afnd->estados_actuales);
+  /*NOTA: solo se libera el puntero pues los estados son referencias no copias*/
+  p_afnd->estados_actuales = new_actual;
+  p_afnd->num_estados_actuales = index;
+
+  /*No avanzo un simbolo al estar con transiciones lambda*/
+}
+
+AFND * AFNDInicializaEstado (AFND * p_afnd){
+  int i=0;
+  estado* est = NULL;
+
+  if(!p_afnd){
     return NULL;
   }
 
+  p_afnd->num_estados_actuales = 0;
 
+  for(i=0; i<p_afnd->num_estados; i++){
+    est = p_afnd->estados[i];
+    if(!est){
+      return NULL;
+    }
+    /*Comprobamos si es inicial*/
+    if(estado_tipo(est) == 0 || estado_tipo(est) == 2){
+      if(sizeof(*p_afnd->estados_actuales)/sizeof(estado *) >= p_afnd->num_estados_actuales){
+        p_afnd->estados_actuales = (estado **)realloc(p_afnd->estados_actuales, sizeof(estado*)*(p_afnd->num_estados_actuales + 1));
+        if(!p_afnd){
+          return NULL;
+        }
+      }
+      p_afnd->estados_actuales[p_afnd->num_estados_actuales] = est;
+      p_afnd->num_estados_actuales++;
+    }
+  }
+
+  /*Realizamos las transciones lambda desde el principio*/
+
+  AFNDTransitaLambda(p_afnd);
+
+  return p_afnd;
+}
+
+void AFNDProcesaEntrada(FILE * fd, AFND * p_afnd){
+  int i = 0;
+
+  if(!fd || !p_afnd){
+    return;
+  }
+
+  i = palabra_get_size(p_afnd->cadena_actual);
+
+  while(i>0){
+    AFNDImprimeConjuntoEstadosActual(fd, p_afnd);
+    AFNDImprimeCadenaActual(fd, p_afnd);
+    AFNDTransita(p_afnd);
+    AFNDTransitaLambda(p_afnd);
+    i--;
+    if(p_afnd->num_estados_actuales == 0)
+      break;
+  }
+  AFNDImprimeConjuntoEstadosActual(fd, p_afnd);
+  AFNDImprimeCadenaActual(fd, p_afnd);
+
+}
+
+AFND * AFNDInsertaLTransicion(AFND * p_afnd, char * nombre_estado_i, char * nombre_estado_f ){
+
+         int i=0,  flag_i=0, flag_f=0, flag_trn=0, index_f=0;
+         transicion* trn = NULL;
+
+         if(!p_afnd || !nombre_estado_i || !nombre_estado_f){
+           return NULL;
+         }
+
+         for(i=0; i<p_afnd->num_estados; i++){
+             /*Comprobamos si tenemos el estado en el automata*/
+           if(estado_es(p_afnd->estados[i], nombre_estado_i)){
+             flag_i = 1;
+           }
+             /*Comprobamos que está el estado final */
+           if(estado_es(p_afnd->estados[i], nombre_estado_f)){
+             flag_f = 1;
+             index_f = i;
+           }
+
+         }
+
+         /*Si no esta alguno salimos */
+         if(flag_i*flag_f != 1){
+           return NULL;
+         }
+
+         /*Buscamos las transiciones del estado inicial*/
+         for(i=0; i<p_afnd->num_transiciones_lambda; i++){
+           if(strcmp(p_afnd->transiciones_lambda[i]->est_inicial, nombre_estado_i) == 0){
+             trn = p_afnd->transiciones_lambda[i];
+             break;
+           }
+         }
+
+         if(!trn){
+           /*Creamos una nueva transicion*/
+           trn = crear_transicion_lambda(p_afnd, nombre_estado_i, "lambda", nombre_estado_f);
+           if(!trn){
+             return NULL;
+           }
+         }else{
+           /*Si ya existe la transicion la modifico si es necesario*/
+
+           for(i=0; i<trn->num_est; i++){
+             if(estado_es(trn->est_final[i], nombre_estado_f)){
+               /*Si ya está hemos acabado*/
+               flag_trn = 1;
+               break;
+             }
+           }
+
+           /*Si no lo he encontrado en los estados finales de la transicion*/
+           if(flag_trn == 0){
+             /*Hago espacio para el estado*/
+             trn->est_final = (estado**) realloc(trn->est_final, sizeof(estado *)*(trn->num_est + 1));
+             if(!trn->est_final){
+               return NULL;
+             }
+             /*Añado el estado*/
+             trn->est_final[trn->num_est] = p_afnd->estados[index_f];
+             trn->num_est += 1;
+           }
+
+         }
+
+/*Si llega hasta aquí es que sorprendentemente todo está correcto*/
+
+return p_afnd;
+}
+
+/*Función recursiva para crear el cierre transitivo de las trans lambda*/
+/*Est_inicial_principal es el estado sobre el cual estamos aplicando la transitividad
+ y est_incial_trans es el estado inicial de la transición lambda que estamos recorriendo en un momento de la recursividad*/
+
+void cierreTransitivoAux(AFND* p_afnd, char* est_inicial_principal, char* est_inicial_trans, estado** est_trans, int num_est_trans){
+  int i,j;
+  if(!p_afnd || !est_inicial_principal || !est_inicial_trans || !est_trans || num_est_trans <= 0)
+    return;
+  /* Primero insertamos los estados por los que estamos pasando en la transicion*/
+  for(i = 0; i < num_est_trans; i++){
+    /*Nos aseguramos de que no crear un bucle infinito debido a la reflexión (toda estado contiene una transición lambda siendo él el estado final)*/
+    if(estado_es(est_trans[i], est_inicial_trans))
+      continue;
+    AFNDInsertaLTransicion(p_afnd, est_inicial_principal, estado_nombre(est_trans[i]));
+    /*Miramos las transiciones lambda de cada estado que estamos transitando actualmente*/
+    for(j=0 ; j < p_afnd->num_transiciones_lambda ; j++){
+      if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(est_trans[i])) == 0){
+        cierreTransitivoAux(p_afnd, est_inicial_principal, p_afnd->transiciones_lambda[j]->est_inicial, p_afnd->transiciones_lambda[j]->est_final, p_afnd->transiciones_lambda[j]->num_est);
+        break;
+      }
+    }
+  }
+}
+
+AFND * AFNDCierraLTransicion (AFND * p_afnd){
+  int i=0, j=0;
+
+  if(!p_afnd){
+    return NULL;
+  }
+
+  /*Busco hacer el cierre refexivo si no existe ya
+  for(i=0; i<p_afnd->num_estados; i++){
+    flag = 0;
+    for(j=0; j<p_afnd->num_transiciones_lambda; j++){
+      if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(p_afnd->estados[i])) == 0 &&
+      estado_es(p_afnd->transiciones_lambda[j]->est_final, estado_nombre(p_afnd->estados[i]))){
+      flag = 1;
+      break;
+      }
+
+    }
+    Si no encuentra una transicion reflexiva la inserta
+    if(flag == 0){
+      trn = AFNDInsertaLTransicion(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]));
+      if(!trn){
+        return NULL;
+      }
+    }
+  }*/
+
+  /*Primero realizamos el cierre reflexivo  (AFNDInsertaLTransicion ya comprueba si existe y que el estado final no esté duplicado)*/
+
+  for (i = 0; i < p_afnd->num_estados ; i++){
+    AFNDInsertaLTransicion(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]));
+  }
+
+  /*Busco hacer el cierre transitivo*/
+
+  for(i = 0; i < p_afnd->num_estados ; i++){
+    /*Por cada estado, buscamos sus transiciones lambda y vemos si los estados finales tienen más transiciones lambda*/
+    for(j=0; j < p_afnd->num_transiciones_lambda ; j++){
+      if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(p_afnd->estados[i])) == 0){
+        cierreTransitivoAux(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]), p_afnd->transiciones_lambda[j]->est_final, p_afnd->transiciones_lambda[j]->num_est);
+        break;
+      }
+    }
+  }
+  return p_afnd;
+
+  /*Busco sobre estados iniciales*/
+}
+
+AFND* AFNDInicializaCadenaActual (AFND* p_afnd){
+    /* TODO OJOOOOOOO DICE EL ENUNCIADO QUE ESTA FUNCION YA LA HACIAMOS IMPLICITAMENTE ANTES,
+    PERO NO HE BORRADO NADA DEL CODIGO ANTIGUO, SI DA PROBLEMAS DE MEMORIA O DE ALGUN TIPO, ECHARLE UN OJO*/
+    if(!p_afnd)
+      return NULL;
+    eliminar_palabra(p_afnd->cadena_actual);
+    p_afnd->cadena_actual = crear_palabra();
+    return p_afnd;
 }

@@ -4,24 +4,17 @@ obj_libs = palabra.o alfabeto.o estado.o afnd.o
 CC = gcc
 CCFLAGS = -pedantic -Wall -g
 
-all: prueba_afnd1 prueba_afnd2
+all: prueba_afnd
 
-prueba_afnd1: prueba_afnd1.o $(obj_libs)
+prueba_afnd: prueba_afnd.o $(obj_libs)
 	$(CC) $(CCFLAGS) $^ -o $@
 
-prueba_afnd1.o: prueba_afnd1.c
+prueba_afnd.o: prueba_afnd.c
 	$(CC) $(CCFLAGS) -c $< -o $@
-
-prueba_afnd2: prueba_afnd2.o $(obj_libs)
-	$(CC) $(CCFLAGS) $^ -o $@
-
-prueba_afnd2.o: prueba_afnd2.c
-	$(CC) $(CCFLAGS) -c $< -o $@
-
 
 %.o: %.c %.h
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 # Clean
 clean:
-	rm -f *.o  prueba_afnd1 prueba_afnd2
+	rm -f *.o  prueba_afnd

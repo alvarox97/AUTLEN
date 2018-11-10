@@ -26,6 +26,14 @@ void AFNDImprimeCadenaActual(FILE *fd, AFND * p_afnd);
 AFND * AFNDInicializaEstado (AFND * p_afnd);
 void AFNDProcesaEntrada(FILE * fd, AFND * p_afnd);
 void AFNDTransita(AFND * p_afnd);
-void AFNDTransitaLambda(AFND * p_afnd, estado ** lista_estados);
+
+/*Funciones para transiciones lambdas*/
+AFND * AFNDInsertaLTransicion(
+       AFND * p_afnd,
+       char * nombre_estado_i,
+       char * nombre_estado_f );
+
+AFND * AFNDCierraLTransicion (AFND * p_afnd);
+AFND * AFNDInicializaCadenaActual (AFND * p_afnd );
 
 #endif
