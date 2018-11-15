@@ -320,6 +320,54 @@ void AFNDElimina(AFND* p_afnd){
   free(p_afnd);
 }
 
+void ImprimeMatrizL(FILE * fd, AFND* p_afnd){
+  int i,j,k,flag = 0;
+  transicion* translambda = NULL;
+
+  /* Comprobamos los argumentos de entrada*/
+  if(!fd || !p_afnd)
+      return;
+  /* Empezamos a imprimir la matriz*/
+  fprintf(fd, "\tRL++*={\n\t\t");
+
+  /*Imprimimos la primera fila, que serán los números de todos los estados*/
+  for (i = 0 ; i < p_afnd->num_estados ; i++) {
+    fprintf(fd, "\t[%d]", i);
+  }
+  /*Por cada estado, imprimos su fila*/
+  for(i = 0 ; i < p_afnd->num_estados ; i++){
+    fprintf(fd, "\n\t\t[%d]", i);
+
+    /* Buscamos la transición lambda del estado que estemos analizando*/
+    for(k = 0 ; k < p_afnd->num_transiciones_lambda ; k++){
+      if(strcmp(p_afnd->transiciones_lambda[k]->est_inicial, estado_nombre(p_afnd->estados[i])) == 0){
+        translambda = p_afnd->transiciones_lambda[k];
+        break;
+      }
+    }
+
+    /* Rellenamos toda la fila*/
+    for(j = 0 ; j < p_afnd->num_estados ; j++){
+
+      /*Si el estado se encuentra entre los estados finales de la transicion que analizamos, cambiamos el flag*/
+      for(k = 0 ; k < translambda->num_est ; k++){
+        if (strcmp(estado_nombre(translambda->est_final[k]), estado_nombre(p_afnd->estados[j])) == 0) {
+          flag = 1;
+          break;
+        }
+      }
+      /*Ponemos un 1*/
+      if(flag == 1)
+        fprintf(fd, "\t1");
+      /*En caso contrario ponemos un 0*/
+      else
+        fprintf(fd, "\t0");
+      flag = 0;
+    }
+  }
+  fprintf(fd, "\n");
+}
+
 void AFNDImprime(FILE * fd, AFND* p_afnd){
   int i;
   /*Comprobamos que los argumentos de entrada sean válidos*/
@@ -347,11 +395,9 @@ void AFNDImprime(FILE * fd, AFND* p_afnd){
     transicion_imprimir(fd, p_afnd->transiciones[i]);
   }
 
-  /*TODO imprimo las lambdas asi para debuguear HACER LA MATRIZ*/
-  for(i=0 ; i < p_afnd->num_transiciones_lambda ; i++){
-    fprintf(fd, "\t\t");
-    transicion_imprimir(fd, p_afnd->transiciones_lambda[i]);
-  }
+  /*Imprimimos la matriz de lambdas*/
+
+  ImprimeMatrizL(fd, p_afnd);
 
   fprintf(fd, "\t}\n}");
 }
