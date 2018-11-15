@@ -317,6 +317,7 @@ void AFNDElimina(AFND* p_afnd){
     eliminar_transicion(p_afnd->transiciones_lambda[i]);
   }
   free(p_afnd->transiciones);
+  free(p_afnd->transiciones_lambda);
   free(p_afnd);
 }
 
@@ -830,7 +831,8 @@ AFND * AFNDInsertaLTransicion(AFND * p_afnd, char * nombre_estado_i, char * nomb
              }
              /*Añado el estado*/
              trn->est_final[trn->num_est] = p_afnd->estados[index_f];
-             trn->num_est += 1;
+             trn->num_est++;
+             flag_trn = 0;
            }
 
          }
