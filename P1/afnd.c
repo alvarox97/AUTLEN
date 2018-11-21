@@ -958,7 +958,6 @@ AFND * AFNDCierraLTransicion (AFND * p_afnd){
   }
   return p_afnd;
 
-  /*Busco sobre estados iniciales*/
 }
 
 AFND* AFNDInicializaCadenaActual (AFND* p_afnd){
