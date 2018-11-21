@@ -16,7 +16,7 @@ int main(int argc, char ** argv)
 
 
 
-    p_afnd_l = AFNDNuevo("afl1",8,2);
+    p_afnd_l = AFNDNuevo("afl1",5,2);
 
     AFNDInsertaSimbolo(p_afnd_l,"0");
     AFNDInsertaSimbolo(p_afnd_l,"1");
@@ -29,12 +29,16 @@ int main(int argc, char ** argv)
 
 
     AFNDInsertaTransicion(p_afnd_l, "q1", "0", "q2");
-    AFNDInsertaTransicion(p_afnd_l, "q2", "0", "qº");
+    AFNDInsertaTransicion(p_afnd_l, "q1", "1", "q1");
+    AFNDInsertaTransicion(p_afnd_l, "q2", "1", "q2");
+    AFNDInsertaTransicion(p_afnd_l, "q2", "0", "q1");
     AFNDInsertaTransicion(p_afnd_l, "q3", "1", "q4");
+    AFNDInsertaTransicion(p_afnd_l, "q3", "0", "q3");
+    AFNDInsertaTransicion(p_afnd_l, "q4", "0", "q4");
     AFNDInsertaTransicion(p_afnd_l, "q4", "1", "q3");
 
     AFNDInsertaLTransicion(p_afnd_l, "q0", "q1");
-    AFNDInsertaLTransicion(p_afnd_l, "q0", "q2");
+    AFNDInsertaLTransicion(p_afnd_l, "q0", "q3");
 
     AFNDCierraLTransicion(p_afnd_l);
 
