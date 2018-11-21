@@ -919,37 +919,19 @@ AFND * AFNDCierraLTransicion (AFND * p_afnd){
     return NULL;
   }
 
-  /*Busco hacer el cierre refexivo si no existe ya
-  for(i=0; i<p_afnd->num_estados; i++){
-    flag = 0;
-    for(j=0; j<p_afnd->num_transiciones_lambda; j++){
-      if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(p_afnd->estados[i])) == 0 &&
-      estado_es(p_afnd->transiciones_lambda[j]->est_final, estado_nombre(p_afnd->estados[i]))){
-      flag = 1;
-      break;
-      }
-
-    }
-    Si no encuentra una transicion reflexiva la inserta
-    if(flag == 0){
-      trn = AFNDInsertaLTransicion(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]));
-      if(!trn){
-        return NULL;
-      }
-    }
-  }*/
-
   /*Primero realizamos el cierre reflexivo  (AFNDInsertaLTransicion ya comprueba si existe y que el estado final no esté duplicado)*/
-
   for (i = 0; i < p_afnd->num_estados ; i++){
+    printf("SIDA%d\n", i);
     AFNDInsertaLTransicion(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]));
   }
 
   /*Busco hacer el cierre transitivo*/
 
   for(i = 0; i < p_afnd->num_estados ; i++){
+    printf("CACA%d\n", i);
     /*Por cada estado, buscamos sus transiciones lambda y vemos si los estados finales tienen más transiciones lambda*/
     for(j=0; j < p_afnd->num_transiciones_lambda ; j++){
+      printf("ASCO%d\n", j);
       if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(p_afnd->estados[i])) == 0){
         cierreTransitivoAux(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]), p_afnd->transiciones_lambda[j]->est_final, p_afnd->transiciones_lambda[j]->num_est);
         break;
