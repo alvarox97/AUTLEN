@@ -888,6 +888,9 @@ AFND * AFNDInsertaLTransicion(AFND * p_afnd, char * nombre_estado_i, char * nomb
 return p_afnd;
 }
 
+/*Funcion auxiliar para la transitividad de las lambdas, devuelve un int que nos informa sobre si hemos necesitado más espacio para
+los estados finales de la transición lambda*/
+
 int AFNDInsertaLTransicion_transitivo(AFND * p_afnd, char * nombre_estado_i, char * nombre_estado_f ){
 
          int i=0,  flag_i=0, flag_f=0, flag_trn=0, index_f=0, flag_insert = 0;
@@ -963,6 +966,8 @@ int AFNDInsertaLTransicion_transitivo(AFND * p_afnd, char * nombre_estado_i, cha
 
 /*Si llega hasta aquí es que sorprendentemente todo está correcto*/
 
+/*flag_insert sera 1 si hemos necesitado volver a reservar espacio para los estados finales, en otro caso será 0*/
+
 return flag_insert;
 }
 
@@ -1031,6 +1036,7 @@ AFND * AFNDCierraLTransicion (AFND * p_afnd){
 AFND* AFNDInicializaCadenaActual (AFND* p_afnd){
     if(!p_afnd)
       return NULL;
+    /*Eliminamos la cadena actual y la creamos vacía de nuevo*/
     eliminar_palabra(p_afnd->cadena_actual);
     p_afnd->cadena_actual = crear_palabra();
     return p_afnd;
