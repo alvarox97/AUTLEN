@@ -387,7 +387,11 @@ void AFNDImprime(FILE * fd, AFND* p_afnd){
   for(i=0; i < p_afnd->num_estados ; i++){
     estado_imprimir(fd, p_afnd->estados[i]);
   }
-  fprintf(fd, "}\n");
+  fprintf(fd, "}\n\n");
+
+  /* ...la matriz de lambdas...*/
+
+  ImprimeMatrizL(fd, p_afnd);
 
   /*... y la función de transición*/
   fprintf(fd, "\n\tFunción de Transición = {\n\n");
@@ -395,10 +399,6 @@ void AFNDImprime(FILE * fd, AFND* p_afnd){
     fprintf(fd, "\t\t");
     transicion_imprimir(fd, p_afnd->transiciones[i]);
   }
-
-  /*Imprimimos la matriz de lambdas*/
-
-  ImprimeMatrizL(fd, p_afnd);
 
   fprintf(fd, "\t}\n}");
 }
@@ -985,6 +985,7 @@ int cierreTransitivoAux(AFND* p_afnd, char* est_inicial_principal, char* est_ini
     if(estado_es(est_trans[i], est_inicial_trans))
       continue;
     ret=AFNDInsertaLTransicion_transitivo(p_afnd, est_inicial_principal, estado_nombre(est_trans[i]));
+    /* Si hemos tenido que reservar memoria, lo notificamos a esta función*/
     if (flag_insert == 0){
       if(ret == 1){
         flag_insert = 1;
