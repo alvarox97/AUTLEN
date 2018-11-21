@@ -32,6 +32,10 @@ AFND * AFNDInsertaLTransicion(
        AFND * p_afnd,
        char * nombre_estado_i,
        char * nombre_estado_f );
+int AFNDInsertaLTransicion_transitivo(
+       AFND * p_afnd,
+       char * nombre_estado_i,
+       char * nombre_estado_f );
 
 AFND * AFNDCierraLTransicion (AFND * p_afnd);
 AFND * AFNDInicializaCadenaActual (AFND * p_afnd );

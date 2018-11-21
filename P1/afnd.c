@@ -888,20 +888,103 @@ AFND * AFNDInsertaLTransicion(AFND * p_afnd, char * nombre_estado_i, char * nomb
 return p_afnd;
 }
 
+int AFNDInsertaLTransicion_transitivo(AFND * p_afnd, char * nombre_estado_i, char * nombre_estado_f ){
+
+         int i=0,  flag_i=0, flag_f=0, flag_trn=0, index_f=0, flag_insert = 0;
+         transicion* trn = NULL;
+         estado** est_aux = NULL;
+
+         if(!p_afnd || !nombre_estado_i || !nombre_estado_f){
+           return -1;
+         }
+
+         for(i=0; i<p_afnd->num_estados; i++){
+             /*Comprobamos si tenemos el estado en el automata*/
+           if(estado_es(p_afnd->estados[i], nombre_estado_i)){
+             flag_i = 1;
+           }
+             /*Comprobamos que está el estado final */
+           if(estado_es(p_afnd->estados[i], nombre_estado_f)){
+             flag_f = 1;
+             index_f = i;
+           }
+
+         }
+
+         /*Si no esta alguno salimos */
+         if(flag_i*flag_f != 1){
+           return -1;
+         }
+
+         /*Buscamos las transiciones del estado inicial*/
+         for(i=0; i<p_afnd->num_transiciones_lambda; i++){
+           if(strcmp(p_afnd->transiciones_lambda[i]->est_inicial, nombre_estado_i) == 0){
+             trn = p_afnd->transiciones_lambda[i];
+             break;
+           }
+         }
+
+         if(!trn){
+           /*Creamos una nueva transicion*/
+           trn = crear_transicion_lambda(p_afnd, nombre_estado_i, "lambda", nombre_estado_f);
+           if(!trn){
+             return -1;
+           }
+         }else{
+           /*Si ya existe la transicion la modifico si es necesario*/
+
+           for(i=0; i<trn->num_est; i++){
+             if(estado_es(trn->est_final[i], nombre_estado_f)){
+               /*Si ya está hemos acabado*/
+               flag_trn = 1;
+               break;
+             }
+           }
+
+           /*Si no lo he encontrado en los estados finales de la transicion*/
+           if(flag_trn == 0){
+             flag_insert = 1;
+             /*Hago espacio para el estado*/
+             est_aux = trn->est_final;
+             trn->est_final = (estado**) malloc(sizeof(estado *)*(trn->num_est + 1));
+             for(i=0; i<trn->num_est; i++){
+               trn->est_final[i] = est_aux[i];
+             }
+             if(!trn->est_final){
+               return -1;
+             }
+             /*Añado el estado*/
+             trn->est_final[trn->num_est] = p_afnd->estados[index_f];
+             trn->num_est++;
+             flag_trn = 0;
+           }
+
+         }
+
+/*Si llega hasta aquí es que sorprendentemente todo está correcto*/
+
+return flag_insert;
+}
+
 /*Función recursiva para crear el cierre transitivo de las trans lambda*/
 /*Est_inicial_principal es el estado sobre el cual estamos aplicando la transitividad
  y est_incial_trans es el estado inicial de la transición lambda que estamos recorriendo en un momento de la recursividad*/
 
-void cierreTransitivoAux(AFND* p_afnd, char* est_inicial_principal, char* est_inicial_trans, estado** est_trans, int num_est_trans){
-  int i,j;
+int cierreTransitivoAux(AFND* p_afnd, char* est_inicial_principal, char* est_inicial_trans, estado** est_trans, int num_est_trans){
+  int i,j, flag_insert=0, ret;
   if(!p_afnd || !est_inicial_principal || !est_inicial_trans || !est_trans || num_est_trans <= 0)
-    return;
+    return -1;
   /* Primero insertamos los estados por los que estamos pasando en la transicion*/
   for(i = 0; i < num_est_trans; i++){
     /*Nos aseguramos de que no crear un bucle infinito debido a la reflexión (toda estado contiene una transición lambda siendo él el estado final)*/
     if(estado_es(est_trans[i], est_inicial_trans))
       continue;
-    AFNDInsertaLTransicion(p_afnd, est_inicial_principal, estado_nombre(est_trans[i]));
+    ret=AFNDInsertaLTransicion_transitivo(p_afnd, est_inicial_principal, estado_nombre(est_trans[i]));
+    if (flag_insert == 0){
+      if(ret == 1){
+        flag_insert = 1;
+      }
+    }
     /*Miramos las transiciones lambda de cada estado que estamos transitando actualmente*/
     for(j=0 ; j < p_afnd->num_transiciones_lambda ; j++){
       if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(est_trans[i])) == 0){
@@ -910,10 +993,12 @@ void cierreTransitivoAux(AFND* p_afnd, char* est_inicial_principal, char* est_in
       }
     }
   }
+  return flag_insert;
 }
 
 AFND * AFNDCierraLTransicion (AFND * p_afnd){
-  int i=0, j=0;
+  int i=0, j=0, ret;
+  estado ** est_aux = NULL;
 
   if(!p_afnd){
     return NULL;
@@ -921,19 +1006,20 @@ AFND * AFNDCierraLTransicion (AFND * p_afnd){
 
   /*Primero realizamos el cierre reflexivo  (AFNDInsertaLTransicion ya comprueba si existe y que el estado final no esté duplicado)*/
   for (i = 0; i < p_afnd->num_estados ; i++){
-    printf("SIDA%d\n", i);
     AFNDInsertaLTransicion(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]));
   }
 
   /*Busco hacer el cierre transitivo*/
 
   for(i = 0; i < p_afnd->num_estados ; i++){
-    printf("CACA%d\n", i);
     /*Por cada estado, buscamos sus transiciones lambda y vemos si los estados finales tienen más transiciones lambda*/
     for(j=0; j < p_afnd->num_transiciones_lambda ; j++){
-      printf("ASCO%d\n", j);
       if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(p_afnd->estados[i])) == 0){
-        cierreTransitivoAux(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]), p_afnd->transiciones_lambda[j]->est_final, p_afnd->transiciones_lambda[j]->num_est);
+        est_aux = p_afnd->transiciones_lambda[j]->est_final;
+        ret=cierreTransitivoAux(p_afnd, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->estados[i]), est_aux, p_afnd->transiciones_lambda[j]->num_est);
+        if(ret == 1){
+          free(est_aux);
+        }
         break;
       }
     }
@@ -943,8 +1029,6 @@ AFND * AFNDCierraLTransicion (AFND * p_afnd){
 }
 
 AFND* AFNDInicializaCadenaActual (AFND* p_afnd){
-    /* TODO OJOOOOOOO DICE EL ENUNCIADO QUE ESTA FUNCION YA LA HACIAMOS IMPLICITAMENTE ANTES,
-    PERO NO HE BORRADO NADA DEL CODIGO ANTIGUO, SI DA PROBLEMAS DE MEMORIA O DE ALGUN TIPO, ECHARLE UN OJO*/
     if(!p_afnd)
       return NULL;
     eliminar_palabra(p_afnd->cadena_actual);
