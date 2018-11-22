@@ -1090,7 +1090,215 @@ AFND* AFNDInicializaCadenaActual (AFND* p_afnd){
     return p_afnd;
 }
 
+AFND * AFND1ODeSimbolo( char * simbolo){
+  AFND * p_afnd_l;
+  char nombre[255] = "";
 
+  sprintf(nombre, "afnd1O_%s", simbolo);
 
-AFND * AFND1OConcatena(AFND * p_afnd_origen1, AFND * p_afnd_origen2);
-AFND * AFND1OEstrella(AFND * p_afnd_origen);
+  p_afnd_l = AFNDNuevo(nombre,2,1);
+
+  AFNDInsertaSimbolo(p_afnd_l,simbolo);
+
+  AFNDInsertaEstado(p_afnd_l,"q0",INICIAL);
+  AFNDInsertaEstado(p_afnd_l,"q1",FINAL);
+
+  AFNDInsertaTransicion(p_afnd_l, "q0", simbolo, "q1");
+  AFNDCierraLTransicion(p_afnd_l);
+
+  return p_afnd_l;
+}
+AFND * AFND1ODeLambda(){
+  AFND * p_afnd_l;
+  char nombre[255] = "";
+
+  sprintf(nombre, "afnd1O_lambda");
+
+  p_afnd_l = AFNDNuevo(nombre,2,0);
+
+  AFNDInsertaEstado(p_afnd_l,"q0",INICIAL);
+  AFNDInsertaEstado(p_afnd_l,"q1",FINAL);
+
+  AFNDInsertaLTransicion(p_afnd_l, "q0", "q1");
+  AFNDCierraLTransicion(p_afnd_l);
+
+  return p_afnd_l;
+}
+AFND * AFND1ODeVacio(){
+  AFND * p_afnd_l;
+  char nombre[255] = "";
+
+  sprintf(nombre, "afnd1O_vacio");
+
+  p_afnd_l = AFNDNuevo(nombre,2,0);
+
+  AFNDInsertaEstado(p_afnd_l,"q0",INICIAL);
+  AFNDInsertaEstado(p_afnd_l,"q1",FINAL);
+  AFNDCierraLTransicion(p_afnd_l);
+
+  return p_afnd_l;
+}
+AFND * AFNDAAFND1O(AFND * p_afnd){
+  int num_ei=0, num_ef=0, i=0, caso=0, j=0, k=0;
+  AFND* p_afnd_l = NULL;
+  char nombre_i[255] = "", nombre_f[255] = "", nombre[255] = "";
+  /*Tomamos numero de estados iniciales y finales*/
+  for(i=0; i<p_afnd->num_estados; i++){
+    if(estado_tipo(p_afnd->estados[i])==INICIAL || estado_tipo(p_afnd->estados[i]) == INICIAL_Y_FINAL){
+      num_ei++;
+    }
+    if(estado_tipo(p_afnd->estados[i])==FINAL || estado_tipo(p_afnd->estados[i]) == INICIAL_Y_FINAL){
+      num_ef++;
+    }
+  }
+
+  if(num_ei == 1 && num_ef == 1){
+    /*Caso de que ya sea 1O*/
+    return p_afnd;
+  }else if(num_ei == 1 && num_ef >1){
+    /*Caso de varios finales*/
+    caso = 1;
+  }else if(num_ei > 1 && num_ef == 1){
+    /*Caso varios iniciales*/
+    caso = 2;
+  }else{
+    /*Caso de todos contra todos*/
+    caso = 3;
+  }
+
+  switch(caso) {
+   case 1 :
+     /*Creamos el nuevo afnd */
+     sprintf(nombre, "afnd1O_%s", p_afnd->nombre);
+     p_afnd_l = AFNDNuevo(nombre, p_afnd->num_estados+1, p_afnd->num_simbolos);
+     /*Añadimos nombre_estado_inicial */
+     for(i=0; i<p_afnd->num_estados; i++){
+       if(estado_tipo(p_afnd->estados[i]) == INICIAL || estado_tipo(p_afnd->estados[i]) == INICIAL_Y_FINAL){
+          sprintf(nombre_i, "%s", estado_nombre(p_afnd->estados[i]));
+          break;
+       }
+     }
+     /*Añadimos nuevo estado final */
+     sprintf(nombre_f, "q%d", p_afnd->num_estados);
+     AFNDInsertaEstado(p_afnd_l,nombre, FINAL);
+     /*Busco sobre los estados y añado transiciones de la forma adecuada*/
+     for(i=0; i<p_afnd->num_estados; i++){
+       if(estado_tipo(p_afnd->estados[i])==INICIAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), INICIAL);
+       }
+       if(estado_tipo(p_afnd->estados[i])==FINAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), NORMAL);
+         /*Añado transicion lambda hasta estado final*/
+         AFNDInsertaLTransicion(p_afnd_l, estado_nombre(p_afnd->estados[i]), nombre_f);
+       }
+       if(estado_tipo(p_afnd->estados[i]) == INICIAL_Y_FINAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), INICIAL);
+         /*Añado transicion lambda hasta estado final*/
+         AFNDInsertaLTransicion(p_afnd_l, estado_nombre(p_afnd->estados[i]), nombre_f);
+       }
+
+     }
+     break;
+   case 2 :
+     /*Creamos el nuevo afnd */
+     sprintf(nombre, "afnd1O_%s", p_afnd->nombre);
+     p_afnd_l = AFNDNuevo(nombre, p_afnd->num_estados+2, p_afnd->num_simbolos);
+     /*Añadimos nuevo estado inicial */
+     sprintf(nombre_i, "q%d", p_afnd->num_estados);
+     AFNDInsertaEstado(p_afnd_l,nombre, INICIAL);
+     /*Añadimos nuevo estado final */
+     for(i=0; i<p_afnd->num_estados; i++){
+       if(estado_tipo(p_afnd->estados[i]) == FINAL || estado_tipo(p_afnd->estados[i]) == INICIAL_Y_FINAL){
+          sprintf(nombre_f, "%s", estado_nombre(p_afnd->estados[i]));
+          break;
+       }
+     }
+     /*Busco sobre los estados y añado transiciones de la forma adecuada*/
+     for(i=0; i<p_afnd->num_estados; i++){
+       if(estado_tipo(p_afnd->estados[i])==INICIAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), NORMAL);
+         /*Añado transicion lambda desde nuevo estado inicial*/
+         AFNDInsertaLTransicion(p_afnd_l, nombre_i, estado_nombre(p_afnd->estados[i]));
+
+       }
+       if(estado_tipo(p_afnd->estados[i])==FINAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), FINAL);
+       }
+       if(estado_tipo(p_afnd->estados[i]) == INICIAL_Y_FINAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), FINAL);
+         /*Añado transicion lambda desde nuevo estado inicial*/
+         AFNDInsertaLTransicion(p_afnd_l, nombre_i, estado_nombre(p_afnd->estados[i]));
+       }
+
+     }
+     break;
+   case 3 :
+     /*Creamos el nuevo afnd */
+     sprintf(nombre, "afnd1O_%s", p_afnd->nombre);
+     p_afnd_l = AFNDNuevo(nombre, p_afnd->num_estados+2, p_afnd->num_simbolos);
+     /*Añadimos nuevo estado inicial */
+     sprintf(nombre_i, "q%d", p_afnd->num_estados);
+     AFNDInsertaEstado(p_afnd_l,nombre, INICIAL);
+     /*Añadimos nuevo estado final */
+     sprintf(nombre_f, "q%d", p_afnd->num_estados+1);
+     AFNDInsertaEstado(p_afnd_l,nombre, FINAL);
+     /*Busco sobre los estados y añado transiciones de la forma adecuada*/
+     for(i=0; i<p_afnd->num_estados; i++){
+       if(estado_tipo(p_afnd->estados[i])==INICIAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), NORMAL);
+         /*Añado transicion lambda desde nuevo estado inicial*/
+         AFNDInsertaLTransicion(p_afnd_l, nombre_i, estado_nombre(p_afnd->estados[i]));
+
+       }
+       if(estado_tipo(p_afnd->estados[i])==FINAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), NORMAL);
+         /*Añado transicion lambda hasta estado final*/
+         AFNDInsertaLTransicion(p_afnd_l, estado_nombre(p_afnd->estados[i]), nombre_f);
+       }
+       if(estado_tipo(p_afnd->estados[i]) == INICIAL_Y_FINAL){
+         /*Inserto el estado en el nuevo arbol*/
+         AFNDInsertaEstado(p_afnd_l,estado_nombre(p_afnd->estados[i]), NORMAL);
+         /*Añado transicion lambda desde nuevo estado inicial*/
+         AFNDInsertaLTransicion(p_afnd_l, nombre_i, estado_nombre(p_afnd->estados[i]));
+         /*Añado transicion lambda hasta estado final*/
+         AFNDInsertaLTransicion(p_afnd_l, estado_nombre(p_afnd->estados[i]), nombre_f);
+       }
+
+     }
+     break;
+   default :
+      /*AFND mal definido*/
+      return NULL;
+  }
+  /*Copio las transiciones*/
+  for(i=0; i<p_afnd->num_estados; i++){
+    /*Inserto todas sus transiciones*/
+    for(j=0; j<p_afnd->num_transiciones; j++){
+      if(strcmp(estado_nombre(p_afnd->estados[i]), p_afnd->transiciones[j]->est_inicial) == 0){
+        for(k=0; k<p_afnd->transiciones[j]->num_est; k++){
+            AFNDInsertaTransicion(p_afnd_l, estado_nombre(p_afnd->estados[i]), p_afnd->transiciones[j]->simbolo_entrante, estado_nombre(p_afnd->transiciones[j]->est_final[k]));
+        }
+      }
+    }
+    /*Inserto todas sus transiciones_lambda*/
+    for(j=0; j<p_afnd->num_transiciones_lambda; j++){
+      if(strcmp(estado_nombre(p_afnd->estados[i]), p_afnd->transiciones_lambda[j]->est_inicial) == 0){
+        for(k=0; k<p_afnd->transiciones_lambda[j]->num_est; k++){
+            AFNDInsertaLTransicion(p_afnd_l, estado_nombre(p_afnd->estados[i]), estado_nombre(p_afnd->transiciones_lambda[j]->est_final[k]));
+        }
+      }
+    }
+  }
+
+  /*Cierre reflexivo y transitivo*/
+  AFNDCierraLTransicion(p_afnd_l);
+  return p_afnd_l;
+}
