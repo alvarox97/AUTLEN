@@ -39,5 +39,9 @@ int AFNDInsertaLTransicion_transitivo(
 
 AFND * AFNDCierraLTransicion (AFND * p_afnd);
 AFND * AFNDInicializaCadenaActual (AFND * p_afnd );
+AFND * AFND1ODeSimbolo( char * simbolo);
+AFND * AFND1ODeLambda();
+AFND * AFND1ODeVacio();
+AFND * AFNDAAFND1O(AFND * p_afnd);
 
 #endif
