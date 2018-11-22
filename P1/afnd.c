@@ -24,7 +24,54 @@ typedef struct _AFND {
     transicion** transiciones_lambda;
 }AFND;
 
+AFND * AFND1OUne(AFND * p_afnd1O_1, AFND * p_afnd1O_2){
+  AFND* p_afnd1O_final;
+  int i, j, num_simbolos;
+  char ** aux;
+  char * nombre_estado[255], nombre_estado_final[255];
 
+  if(!p_afnd1O_1 || !p_afnd1O_2)
+    return NULL;
+
+  if (p_afnd1O_1->num_simbolos >= p_afnd1O_2->num_simbolos)
+    num_simbolos = p_afnd1O_1->num_simbolos;
+  else
+    num_simbolos = p_afnd1O_2->num_simbolos;
+
+  p_afnd1O_final = AFNDNuevo("p_afnd1O_union", 2 + p_afnd1O_1->num_estados + p_afnd1O_2->num_estados, num_simbolos);
+
+  /*Insertamos los símbolos (si están repetidos no se insertan)*/
+
+  aux = alfabeto_get_simbolos(p_afnd1O_1->alfabeto);
+
+  for(i = 0 ; i < p_afnd1O_1->num_simbolos ; i++)
+    AFNDInsertaSimbolo(p_afnd1O_final, aux[i]);
+
+  aux = alfabeto_get_simbolos(p_afnd1O_2->alfabeto);
+
+  for(i = 0 ; i < p_afnd1O_2->num_simbolos ; i++)
+    AFNDInsertaSimbolo(p_afnd1O_final, aux[i]);
+
+  /*Insertamos dos estados, el inicial y el final*/
+  AFNDInsertaEstado(p_afnd1O_final,"q0",INICIAL);
+  sprintf(nombre_estado_final, "q%d", p_afnd1O_1->num_estados + p_afnd1O_1->num_estados - 1);
+  AFNDInsertaEstado(p_afnd_l, nombre_estado_final, FINAL);
+
+  for(i = 0 ; i < p_afnd1O_1->num_estados ; i++){
+    sprintf(nombre_estado, "q%d", i+1);
+    AFNDInsertaEstado(p_afnd1O_final, nombre_estado, NORMAL);
+    if(estado_tipo(p_afnd1O_1->estados[i]) == INICIAL)
+      AFNDInsertaLTransicion(p_afnd1O_final, "q0", nombre_estado);
+
+    else if(estado_tipo(p_afnd1O_1->estados[i]) == FINAL)
+      AFNDInsertaLTransicion(p_afnd1O_final, nombre_estado, nombre_estado_final);
+  }
+  for(i = 0 ; i < p_afnd1O_1->num_transiciones ; i++){
+
+  }
+
+
+}
 
 transicion* crear_transicion(AFND* afnd, char* est_inicial, char* simbolo_entrante, char* est_final){
   transicion* trans = NULL;
@@ -1042,3 +1089,8 @@ AFND* AFNDInicializaCadenaActual (AFND* p_afnd){
     p_afnd->cadena_actual = crear_palabra();
     return p_afnd;
 }
+
+
+
+AFND * AFND1OConcatena(AFND * p_afnd_origen1, AFND * p_afnd_origen2);
+AFND * AFND1OEstrella(AFND * p_afnd_origen);
