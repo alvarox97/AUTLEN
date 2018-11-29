@@ -28,7 +28,7 @@ AFND * AFND1OUne(AFND * p_afnd1O_1, AFND * p_afnd1O_2){
   AFND* p_afnd1O_final;
   int i, j, num_simbolos;
   char ** aux;
-  char * nombre_estado[255], nombre_estado_final[255];
+  char * nombre_estado1[255], nombre_estado2[255], nombre_estado_final[255];
 
   if(!p_afnd1O_1 || !p_afnd1O_2)
     return NULL;
@@ -54,20 +54,24 @@ AFND * AFND1OUne(AFND * p_afnd1O_1, AFND * p_afnd1O_2){
 
   /*Insertamos dos estados, el inicial y el final*/
   AFNDInsertaEstado(p_afnd1O_final,"q0",INICIAL);
-  sprintf(nombre_estado_final, "q%d", p_afnd1O_1->num_estados + p_afnd1O_1->num_estados - 1);
+  sprintf(nombre_estado_final, "q%d", p_afnd1O_1->num_estados + p_afnd1O_2->num_estados - 1);
   AFNDInsertaEstado(p_afnd_l, nombre_estado_final, FINAL);
 
   for(i = 0 ; i < p_afnd1O_1->num_estados ; i++){
-    sprintf(nombre_estado, "q%d", i+1);
-    AFNDInsertaEstado(p_afnd1O_final, nombre_estado, NORMAL);
+    sprintf(nombre_estado1, "q%d", i+1);
+    AFNDInsertaEstado(p_afnd1O_final, nombre_estado1, NORMAL);
     if(estado_tipo(p_afnd1O_1->estados[i]) == INICIAL)
-      AFNDInsertaLTransicion(p_afnd1O_final, "q0", nombre_estado);
+      AFNDInsertaLTransicion(p_afnd1O_final, "q0", nombre_estado1);
 
     else if(estado_tipo(p_afnd1O_1->estados[i]) == FINAL)
-      AFNDInsertaLTransicion(p_afnd1O_final, nombre_estado, nombre_estado_final);
+      AFNDInsertaLTransicion(p_afnd1O_final, nombre_estado1, nombre_estado_final);
   }
   for(i = 0 ; i < p_afnd1O_1->num_transiciones ; i++){
+    for (j = 0 ; j < p_afnd1O_1->transiciones[i]->num_est){
+      sprintf(nombre_estado1, "q%d". )
+      AFNDInsertaTransicion(p_afnd1O_final, ,p_afnd1O_1->transiciones[i]->simbolo_entrante,char * nombre_estado_f );
 
+    }
   }
 
 
@@ -89,7 +93,7 @@ transicion* crear_transicion(AFND* afnd, char* est_inicial, char* simbolo_entran
 
   trans->est_inicial = (char*)malloc((strlen(est_inicial)+1)*sizeof(char));
   if(!trans->est_inicial){
-    free(trans);
+    free(trans);nombre_estado
     return NULL;
   }
   strcpy(trans->est_inicial, est_inicial);
@@ -488,7 +492,7 @@ AFND * AFNDInsertaEstado(AFND * p_afnd, char * nombre, int tipo){
 
   }
 
-return p_afnd;
+  return p_afnd;
 }
 
 AFND * AFNDInsertaTransicion(AFND * p_afnd, char * nombre_estado_i, char * nombre_simbolo_entrada,char * nombre_estado_f ){
@@ -930,9 +934,9 @@ AFND * AFNDInsertaLTransicion(AFND * p_afnd, char * nombre_estado_i, char * nomb
 
          }
 
-/*Si llega hasta aquí es que sorprendentemente todo está correcto*/
+  /*Si llega hasta aquí es que sorprendentemente todo está correcto*/
 
-return p_afnd;
+  return p_afnd;
 }
 
 /*Funcion auxiliar para la transitividad de las lambdas, devuelve un int que nos informa sobre si hemos necesitado más espacio para
@@ -1011,11 +1015,11 @@ int AFNDInsertaLTransicion_transitivo(AFND * p_afnd, char * nombre_estado_i, cha
 
          }
 
-/*Si llega hasta aquí es que sorprendentemente todo está correcto*/
+  /*Si llega hasta aquí es que sorprendentemente todo está correcto*/
 
-/*flag_insert sera 1 si hemos necesitado volver a reservar espacio para los estados finales, en otro caso será 0*/
+  /*flag_insert sera 1 si hemos necesitado volver a reservar espacio para los estados finales, en otro caso será 0*/
 
-return flag_insert;
+  return flag_insert;
 }
 
 /*Función recursiva para crear el cierre transitivo de las trans lambda*/
