@@ -1013,7 +1013,7 @@ int cierreTransitivoAux(AFND* p_afnd, char* est_inicial_principal, char* est_ini
     /*Miramos las transiciones lambda de cada estado que estamos transitando actualmente*/
     for(j=0 ; j < p_afnd->num_transiciones_lambda ; j++){
       if(strcmp(p_afnd->transiciones_lambda[j]->est_inicial, estado_nombre(est_trans[i])) == 0){
-        cierreTransitivoAux(p_afnd, est_inicial_principal, p_afnd->transiciones_lambda[j]->est_inicial, p_afnd->transiciones_lambda[j]->est_final, 
+        cierreTransitivoAux(p_afnd, est_inicial_principal, p_afnd->transiciones_lambda[j]->est_inicial, p_afnd->transiciones_lambda[j]->est_final,
           p_afnd->transiciones_lambda[j]->num_est, lista_expandidos, num_expandidos);
         break;
       }
@@ -1065,7 +1065,7 @@ AFND * AFNDCierraLTransicion (AFND * p_afnd){
     if(lista_expandidos != NULL)
       free(lista_expandidos[i]);
   }
-  free(lista_expandidos);    
+  free(lista_expandidos);
   return p_afnd;
 
 }
@@ -1332,7 +1332,7 @@ AFND * AFND1OUne(AFND * p_afnd1O_1, AFND * p_afnd1O_2){
 
   for(i = 0 ; i < p_afnd1O_2->num_simbolos ; i++)
     AFNDInsertaSimbolo(p_afnd1O_final, simbolos_afnd2[i]);
-  
+
   /*Insertamos dos estados, el inicial y el final*/
   AFNDInsertaEstado(p_afnd1O_final,"q0",INICIAL);
   sprintf(nombre_estado_final, "q1");
@@ -1373,7 +1373,7 @@ AFND * AFND1OUne(AFND * p_afnd1O_1, AFND * p_afnd1O_2){
     }
   }
 
-  /*Añadimos todos los estados del segundo afnd, cambiando su nombre (por ejemplo, si es qy pasa a ser qx 
+  /*Añadimos todos los estados del segundo afnd, cambiando su nombre (por ejemplo, si es qy pasa a ser qx
   siendo x num_estados_afnd1+y+2 porque q0/1 es el estado inicial/final nuevos y hemos añadido todos los estados del afnd 1)*/
 
   for(i = 0 ; i < p_afnd1O_2->num_estados ; i++){
@@ -1408,8 +1408,8 @@ AFND * AFND1OUne(AFND * p_afnd1O_1, AFND * p_afnd1O_2){
       AFNDInsertaLTransicion(p_afnd1O_final, nombre_estado1, nombre_estado2);
     }
   }
-
-  AFNDCierraLTransicion(p_afnd1O_final);
+  /*Se cierra la transicion en el main
+  AFNDCierraLTransicion(p_afnd1O_final);*/
 
   return p_afnd1O_final;
 }
@@ -1453,14 +1453,14 @@ AFND * AFND1OConcatena(AFND * p_afnd_origen1, AFND * p_afnd_origen2){
 
   for(i = 0 ; i < p_afnd_origen2->num_simbolos ; i++)
     AFNDInsertaSimbolo(p_afnd1O_final, simbolos_afnd2[i]);
-  
+
   /*Insertamos dos estados, el inicial y el final*/
   AFNDInsertaEstado(p_afnd1O_final,"q0",INICIAL);
   sprintf(nombre_estado_final, "q1");
   AFNDInsertaEstado(p_afnd1O_final, nombre_estado_final, FINAL);
 
   /*Añadimos todos los estados del segundo afnd (antes que el primer afnd, porque este necesitará una transición lambda al segundo)
-  , cambiando su nombre (por ejemplo, si es qy pasa a ser qx siendo x num_estados_afnd1+y+2 porque q0/1 es el estado inicial/final 
+  , cambiando su nombre (por ejemplo, si es qy pasa a ser qx siendo x num_estados_afnd1+y+2 porque q0/1 es el estado inicial/final
   nuevos y hemos añadido todos los estados del afnd 1)*/
 
   for(i = 0 ; i < p_afnd_origen2->num_estados ; i++){
@@ -1532,7 +1532,8 @@ AFND * AFND1OConcatena(AFND * p_afnd_origen1, AFND * p_afnd_origen2){
     }
   }
 
-  AFNDCierraLTransicion(p_afnd1O_final);
+  /*Se cierra la transicion en el main
+  AFNDCierraLTransicion(p_afnd1O_final);*/
 
   return p_afnd1O_final;
 }
@@ -1558,7 +1559,7 @@ AFND * AFND1OEstrella(AFND * p_afnd_origen){
 
   for(i = 0 ; i < p_afnd_origen->num_simbolos ; i++)
     AFNDInsertaSimbolo(p_afnd1O_final, simbolos_afnd1[i]);
-  
+
   /*Insertamos dos estados, el inicial y el final*/
   AFNDInsertaEstado(p_afnd1O_final,"q0",INICIAL);
   sprintf(nombre_estado_final, "q1");
@@ -1603,8 +1604,8 @@ AFND * AFND1OEstrella(AFND * p_afnd_origen){
   /* Del nuevo estado inicial al nuevo final (acepta lambda) y viceversa (operación *)*/
   AFNDInsertaLTransicion(p_afnd1O_final, "q0", "q1");
   AFNDInsertaLTransicion(p_afnd1O_final, "q1", "q0");
-
-  AFNDCierraLTransicion(p_afnd1O_final);
+  /*Se cierra la transicion en el main
+  AFNDCierraLTransicion(p_afnd1O_final);*/
 
   return p_afnd1O_final;
 }
