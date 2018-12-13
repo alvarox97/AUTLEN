@@ -398,17 +398,6 @@ void AFNDImprime(FILE * fd, AFND* p_afnd){
     transicion_imprimir(fd, p_afnd->transiciones[i]);
   }
 
-/*Borrar*/
-
-  fprintf(fd, "\n\tFunción lambda = {\n\n");
-  for(i=0 ; i < p_afnd->num_transiciones_lambda ; i++){
-    fprintf(fd, "\t\t");
-    transicion_imprimir(fd, p_afnd->transiciones_lambda[i]);
-  }
-
-
-
-
   fprintf(fd, "\t}\n}\n");
 }
 
@@ -1093,7 +1082,8 @@ AFND * AFND1ODeSimbolo( char * simbolo){
   AFNDInsertaEstado(p_afnd_l,"q1",FINAL);
 
   AFNDInsertaTransicion(p_afnd_l, "q0", simbolo, "q1");
-  AFNDCierraLTransicion(p_afnd_l);
+  /*Cerramos transiciones en el main
+  AFNDCierraLTransicion(p_afnd_l);*/
 
   return p_afnd_l;
 }
@@ -1109,7 +1099,8 @@ AFND * AFND1ODeLambda(){
   AFNDInsertaEstado(p_afnd_l,"q1",FINAL);
 
   AFNDInsertaLTransicion(p_afnd_l, "q0", "q1");
-  AFNDCierraLTransicion(p_afnd_l);
+  /*Cerramos transiciones en el main
+  AFNDCierraLTransicion(p_afnd_l);*/
 
   return p_afnd_l;
 }
@@ -1123,7 +1114,8 @@ AFND * AFND1ODeVacio(){
 
   AFNDInsertaEstado(p_afnd_l,"q0",INICIAL);
   AFNDInsertaEstado(p_afnd_l,"q1",FINAL);
-  AFNDCierraLTransicion(p_afnd_l);
+  /*Cerramos transiciones en el main
+  AFNDCierraLTransicion(p_afnd_l);*/
 
   return p_afnd_l;
 }
@@ -1408,7 +1400,7 @@ AFND * AFND1OUne(AFND * p_afnd1O_1, AFND * p_afnd1O_2){
       AFNDInsertaLTransicion(p_afnd1O_final, nombre_estado1, nombre_estado2);
     }
   }
-  /*Se cierra la transicion en el main
+  /*Cerramos las transciones lambda en el main
   AFNDCierraLTransicion(p_afnd1O_final);*/
 
   return p_afnd1O_final;
@@ -1531,8 +1523,7 @@ AFND * AFND1OConcatena(AFND * p_afnd_origen1, AFND * p_afnd_origen2){
       AFNDInsertaLTransicion(p_afnd1O_final, nombre_estado1, nombre_estado2);
     }
   }
-
-  /*Se cierra la transicion en el main
+  /*Cerramos las transciones lambda en el main
   AFNDCierraLTransicion(p_afnd1O_final);*/
 
   return p_afnd1O_final;
@@ -1553,7 +1544,7 @@ AFND * AFND1OEstrella(AFND * p_afnd_origen){
 
   num_simbolos = p_afnd_origen->num_simbolos;
 
-  p_afnd1O_final = AFNDNuevo("p_afnd1O_union", 2 + p_afnd_origen->num_estados, num_simbolos);
+  p_afnd1O_final = AFNDNuevo("p_afnd1O_estrella", 2 + p_afnd_origen->num_estados, num_simbolos);
 
   /*Insertamos los símbolos (si están repetidos no se insertan)*/
 
@@ -1604,8 +1595,70 @@ AFND * AFND1OEstrella(AFND * p_afnd_origen){
   /* Del nuevo estado inicial al nuevo final (acepta lambda) y viceversa (operación *)*/
   AFNDInsertaLTransicion(p_afnd1O_final, "q0", "q1");
   AFNDInsertaLTransicion(p_afnd1O_final, "q1", "q0");
-  /*Se cierra la transicion en el main
+  /*Cerramos las transciones lambda en el main
   AFNDCierraLTransicion(p_afnd1O_final);*/
 
   return p_afnd1O_final;
+}
+
+void AFNDADot(AFND * p_afnd){
+  FILE *fout;
+  int i,j;
+  char nombre_fichero[255];
+  if (!p_afnd)
+    return;
+  /*Abrimos el fichero en modo escritura con el nombre del afnd.dot*/
+  sprintf(nombre_fichero, "%s.dot", p_afnd->nombre);
+  fout = fopen(nombre_fichero, "w");
+  if(!fout)
+    return;
+  /*Empezamos a escribir el fichero, le indicamos que es un grafo dirigido, su nombre
+  y que se dibuja de izquierda a derecha*/
+  fprintf(fout, "digraph %s  { rankdir=LR;\n", p_afnd->nombre);
+  /*Insertamos el nodo invisible para el truco de la representación del estado inicial*/
+  fprintf(fout, "\t_invisible [style=\"invis\"];\n");
+
+  /*Insertamos todos los estados:*/
+
+  for(i = 0 ; i < p_afnd->num_estados ; i++){
+    /*Si es inicial, añadimos el estado y creamos la transición lambda con _invisible*/
+    if(estado_tipo(p_afnd->estados[i]) == INICIAL){
+      fprintf(fout, "\t%s;\n", estado_nombre(p_afnd->estados[i]));
+      fprintf(fout, "\t_invisible -> %s ;\n", estado_nombre(p_afnd->estados[i]));
+    }
+    /*Si es final, le ponemos un contorno más grueso*/
+    else if(estado_tipo(p_afnd->estados[i]) == FINAL){
+      fprintf(fout, "\t%s [penwidth=\"2\"];\n", estado_nombre(p_afnd->estados[i]));
+    }
+    else{
+      fprintf(fout, "\t%s;\n", estado_nombre(p_afnd->estados[i]));
+    }
+  }
+
+  /*Insertamos las transciones no lambda*/
+  for(i = 0; i < p_afnd->num_transiciones ; i++){
+    /*Para cada transición, añadimos cada nodo final*/
+    for(j = 0 ; j < p_afnd->transiciones[i]->num_est ; j++){
+      fprintf(fout, "\t%s -> %s [label=\"%s\"];\n",
+      p_afnd->transiciones[i]->est_inicial,
+      estado_nombre(p_afnd->transiciones[i]->est_final[j]),
+      p_afnd->transiciones[i]->simbolo_entrante);
+    }
+  }
+
+  /*Insertamos las transciones lambda*/
+  for(i = 0; i < p_afnd->num_transiciones_lambda ; i++){
+    /*Para cada transición, añadimos cada nodo final*/
+    for(j = 0 ; j < p_afnd->transiciones_lambda[i]->num_est ; j++){
+      fprintf(fout, "\t%s -> %s [label=\"&lambda;\"];\n",
+      p_afnd->transiciones_lambda[i]->est_inicial,
+      estado_nombre(p_afnd->transiciones_lambda[i]->est_final[j]));
+    }
+  }
+
+  /*Cerramos el fichero*/
+
+  fprintf(fout, "}");
+
+  fclose(fout);
 }

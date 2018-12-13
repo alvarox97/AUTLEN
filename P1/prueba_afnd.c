@@ -30,12 +30,21 @@ int main(int argc, char ** argv)
         p_afnd_l4 = AFND1OUne(p_afnd_l0, p_afnd_l1);
 /* SE CREA UN AUTÓMATA FINITO PARA LA EXPRESIÓN ( “0”+”1” ) */
         p_afnd_l5 = AFND1OEstrella(p_afnd_l4);
-/* SE CREA UN AUTÓMATA FINITO PARA LA EXPRESIÓN “1”.”1”.( “0”+”1” )*/ 
+/* SE CREA UN AUTÓMATA FINITO PARA LA EXPRESIÓN “1”.”1”.( “0”+”1” )*/
         p_afnd_l3 = AFND1OConcatena(p_afnd_l2, p_afnd_l5);
 
 
 /* SE CREA UN AUTÓMATA FINITO PARA LA EXPRESIÓN "1" */
         p_afnd_l6 = AFND1OEstrella(p_afnd_l1);
+
+/*Dot de los afnd*/
+      //AFNDADot(p_afnd_l0);
+      //AFNDADot(p_afnd_l1);
+      //AFNDADot(p_afnd_l2);
+      AFNDADot(p_afnd_l3);
+      //AFNDADot(p_afnd_l4);
+      //AFNDADot(p_afnd_l5);
+      //AFNDADot(p_afnd_l6);
 
 /* SE CALCULA EL CIERRE REFLEXIVO-TRANSITIVO DE TODOS LOS AUTÓMATAS */
       p_afnd_l0 = AFNDCierraLTransicion(p_afnd_l0);
@@ -110,6 +119,14 @@ int main(int argc, char ** argv)
         AFNDProcesaEntrada(stdout,p_afnd_l3);
         AFNDInicializaCadenaActual(p_afnd_l3);
 
+        fprintf(stdout,"\tLA CADENA 10 NO ES RECONOCIDA POR EL AUTOMATA DE 11(0+1)* POR SU PRINCIPIO\n");
+        AFNDInsertaLetra(p_afnd_l3,"1");
+        AFNDInsertaLetra(p_afnd_l3,"0");
+        AFNDImprimeCadenaActual(stdout,p_afnd_l3);
+        AFNDInicializaEstado(p_afnd_l3);
+        AFNDProcesaEntrada(stdout,p_afnd_l3);
+        AFNDInicializaCadenaActual(p_afnd_l3);
+
 /********************************************************/
         AFNDElimina(p_afnd_l0);
         AFNDElimina(p_afnd_l1);
@@ -123,5 +140,3 @@ int main(int argc, char ** argv)
         return 0;
 
 }
-
-

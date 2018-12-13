@@ -23,4 +23,4 @@ prueba_extra.o: prueba_afnd_extra.c
 
 # Clean
 clean:
-	rm -f *.o  prueba_afnd prueba_extra
+	rm -f *.o  prueba_afnd prueba_extra *.dot *.gif
