@@ -1306,7 +1306,7 @@ AFND * AFND1OUne(AFND * p_afnd1O_1, AFND * p_afnd1O_2){
   for(i = 0 ; i < p_afnd1O_2->num_simbolos ; i++){
     flag = 0;
     for(j = 0 ; j < p_afnd1O_1->num_simbolos ; j++){
-      if(strcmp(simbolos_afnd1[j], simbolos_afnd2[j]) == 0){
+      if(strcmp(simbolos_afnd1[j], simbolos_afnd2[i]) == 0){
         flag = 1;
       }
     }
@@ -1427,7 +1427,7 @@ AFND * AFND1OConcatena(AFND * p_afnd_origen1, AFND * p_afnd_origen2){
   for(i = 0 ; i < p_afnd_origen2->num_simbolos ; i++){
     flag = 0;
     for(j = 0 ; j < p_afnd_origen1->num_simbolos ; j++){
-      if(strcmp(simbolos_afnd1[j], simbolos_afnd2[j]) == 0){
+      if(strcmp(simbolos_afnd1[j], simbolos_afnd2[i]) == 0){
         flag = 1;
       }
     }
